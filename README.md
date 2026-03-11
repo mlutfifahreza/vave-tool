@@ -2,31 +2,41 @@
 
 Go backend service with REST API and gRPC support.
 
+## 📚 API Documentation
+
+Access the interactive Swagger UI at: **http://localhost:8080/swagger/index.html**
+
+Features:
+- Interactive "Try it out" functionality
+- Complete endpoint documentation with examples
+- Schema definitions and parameter descriptions
+
+**Regenerate docs after changes:**
+```bash
+make swagger
+```
+
 ## Quick Start
 
 ```bash
 # Install dependencies
 go mod download
 
+# Create .env file
+cp .env.example .env
+
 # Run migrations
 make migrate-up
 
+# Make proto
+make proto
+
 # Start server
 make run
+
+# Access API documentation
+# Open http://localhost:8080/swagger/index.html in your browser
 ```
-
-## Development
-
-```bash
-make test           # Run tests
-make build          # Build binary
-make lint           # Run linter
-make proto          # Generate proto files
-make run            # Start server
-```
-
-See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for API details.
-
 
 ## Project Structure
 

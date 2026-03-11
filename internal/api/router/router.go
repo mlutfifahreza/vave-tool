@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/vave-tool/backend/internal/api/handler"
 )
 
@@ -26,6 +27,8 @@ func (r *Router) SetupRoutes() http.Handler {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
+
+	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
 	return r.enableCORS(mux)
 }

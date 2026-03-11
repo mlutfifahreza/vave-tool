@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	_ "github.com/vave-tool/backend/docs"
 	"github.com/vave-tool/backend/internal/api/handler"
 	"github.com/vave-tool/backend/internal/api/router"
 	"github.com/vave-tool/backend/internal/config"
@@ -21,6 +22,21 @@ import (
 	"github.com/vave-tool/backend/internal/service"
 	"github.com/vave-tool/backend/proto"
 )
+
+// @title Vave Tool API
+// @version 1.0
+// @description A Go-based backend service that provides REST and gRPC APIs for managing products.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@vave-tool.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
+// @schemes http
 
 func main() {
 	cfg := config.Load()

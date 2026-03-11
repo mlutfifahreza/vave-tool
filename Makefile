@@ -1,4 +1,4 @@
-.PHONY: help build run test proto migrate-up migrate-down seed-products
+.PHONY: help build run test proto migrate-up migrate-down seed-products swagger
 
 help:
 	@echo "Available commands:"
@@ -6,6 +6,7 @@ help:
 	@echo "  make run         - Run the application"
 	@echo "  make test        - Run tests"
 	@echo "  make proto       - Generate protobuf files"
+	@echo "  make swagger     - Generate Swagger documentation"
 	@echo "  make migrate-up  - Run database migrations up"
 	@echo "  make migrate-down - Run database migrations down"
 	@echo "  make seed-products - Insert dummy products (dev only)"
@@ -23,6 +24,9 @@ proto:
 	protoc --go_out=. --go_opt=module=github.com/vave-tool/backend \
 		--go-grpc_out=. --go-grpc_opt=module=github.com/vave-tool/backend \
 		proto/product.proto
+
+swagger:
+	swag init -g cmd/api/main.go -o docs
 
 migrate-up:
 	@echo "Running migrations..."
