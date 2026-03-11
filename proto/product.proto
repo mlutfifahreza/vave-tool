@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package product;
 
-option go_package = "github.com/vave-tool/backend/internal/grpc/pb";
+option go_package = "github.com/vave-tool/backend/proto";
 
 import "google/protobuf/timestamp.proto";
 

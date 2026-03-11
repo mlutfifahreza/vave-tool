@@ -4,7 +4,7 @@
 // 	protoc        v6.33.1
 // source: proto/product.proto
 
-package pb
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -335,7 +335,7 @@ const file_proto_product_proto_rawDesc = "" +
 	"\x0eProductService\x12K\n" +
 	"\fListProducts\x12\x1c.product.ListProductsRequest\x1a\x1d.product.ListProductsResponse\x12E\n" +
 	"\n" +
-	"GetProduct\x12\x1a.product.GetProductRequest\x1a\x1b.product.GetProductResponseB/Z-github.com/vave-tool/backend/internal/grpc/pbb\x06proto3"
+	"GetProduct\x12\x1a.product.GetProductRequest\x1a\x1b.product.GetProductResponseB$Z\"github.com/vave-tool/backend/protob\x06proto3"
 
 var (
 	file_proto_product_proto_rawDescOnce sync.Once

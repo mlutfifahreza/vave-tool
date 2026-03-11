@@ -16,10 +16,10 @@ import (
 	"github.com/vave-tool/backend/internal/api/router"
 	"github.com/vave-tool/backend/internal/config"
 	grpcHandler "github.com/vave-tool/backend/internal/grpc"
-	"github.com/vave-tool/backend/internal/grpc/pb"
 	"github.com/vave-tool/backend/internal/pkg/db"
 	"github.com/vave-tool/backend/internal/repository"
 	"github.com/vave-tool/backend/internal/service"
+	"github.com/vave-tool/backend/proto"
 )
 
 func main() {
@@ -42,7 +42,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	productGRPCServer := grpcHandler.NewProductServer(productService)
-	pb.RegisterProductServiceServer(grpcServer, productGRPCServer)
+	proto.RegisterProductServiceServer(grpcServer, productGRPCServer)
 	reflection.Register(grpcServer)
 
 	go func() {

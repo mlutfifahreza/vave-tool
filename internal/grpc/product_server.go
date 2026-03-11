@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/vave-tool/backend/internal/domain"
-	"github.com/vave-tool/backend/internal/grpc/pb"
+	"github.com/vave-tool/backend/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ProductServer struct {
-	pb.UnimplementedProductServiceServer
+	proto.UnimplementedProductServiceServer
 	service domain.ProductService
 }
 
@@ -21,23 +21,23 @@ func NewProductServer(service domain.ProductService) *ProductServer {
 	}
 }
 
-func (s *ProductServer) ListProducts(ctx context.Context, req *pb.ListProductsRequest) (*pb.ListProductsResponse, error) {
+func (s *ProductServer) ListProducts(ctx context.Context, req *proto.ListProductsRequest) (*proto.ListProductsResponse, error) {
 	products, err := s.service.ListProducts(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to fetch products: %v", err)
 	}
 
-	pbProducts := make([]*pb.Product, 0, len(products))
+	pbProducts := make([]*proto.Product, 0, len(products))
 	for _, p := range products {
 		pbProducts = append(pbProducts, toPBProduct(p))
 	}
 
-	return &pb.ListProductsResponse{
+	return &proto.ListProductsResponse{
 		Products: pbProducts,
 	}, nil
 }
 
-func (s *ProductServer) GetProduct(ctx context.Context, req *pb.GetProductRequest) (*pb.GetProductResponse, error) {
+func (s *ProductServer) GetProduct(ctx context.Context, req *proto.GetProductRequest) (*proto.GetProductResponse, error) {
 	if req.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "product id is required")
 	}
@@ -50,13 +50,13 @@ func (s *ProductServer) GetProduct(ctx context.Context, req *pb.GetProductReques
 		return nil, status.Errorf(codes.Internal, "failed to fetch product: %v", err)
 	}
 
-	return &pb.GetProductResponse{
+	return &proto.GetProductResponse{
 		Product: toPBProduct(product),
 	}, nil
 }
 
-func toPBProduct(p *domain.Product) *pb.Product {
-	pbProduct := &pb.Product{
+func toPBProduct(p *domain.Product) *proto.Product {
+	pbProduct := &proto.Product{
 		Id:            p.ID,
 		Name:          p.Name,
 		Price:         p.Price,
