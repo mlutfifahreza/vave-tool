@@ -44,15 +44,15 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param id query string true "Product ID"
+// @Param id path string true "Product ID"
 // @Success 200 {object} response.Response{data=domain.Product}
 // @Failure 400 {object} response.Response
 // @Failure 404 {object} response.Response
 // @Failure 500 {object} response.Response
-// @Router /api/products/get [get]
+// @Router /api/products/{id} [get]
 func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	id := r.URL.Query().Get("id")
+	id := r.PathValue("id")
 
 	if id == "" {
 		response.Error(w, http.StatusBadRequest, "Product ID is required")

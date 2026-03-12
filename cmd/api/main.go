@@ -49,8 +49,16 @@ func main() {
 
 	log.Println("Database connection established")
 
+	redisClient, err := db.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password, cfg.Redis.DB)
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	}
+	defer redisClient.Close()
+
+	log.Println("Redis connection established")
+
 	productRepo := repository.NewProductRepository(database)
-	productService := service.NewProductService(productRepo)
+	productService := service.NewProductService(productRepo, redisClient)
 	productHandler := handler.NewProductHandler(productService)
 
 	httpRouter := router.NewRouter(productHandler)

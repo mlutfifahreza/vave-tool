@@ -21,7 +21,7 @@ func (r *Router) SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/products", r.productHandler.List)
-	mux.HandleFunc("/api/products/get", r.productHandler.GetByID)
+	mux.HandleFunc("/api/products/{id}", r.productHandler.GetByID)
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)

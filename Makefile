@@ -11,9 +11,6 @@ help:
 	@echo "  make migrate-down - Run database migrations down"
 	@echo "  make seed-products - Insert dummy products (dev only)"
 
-build:
-	go build -o bin/api cmd/api/main.go
-
 run:
 	go run cmd/api/main.go
 

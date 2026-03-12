@@ -7,6 +7,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	Redis    RedisConfig
 	GRPC     GRPCConfig
 }
 
@@ -22,6 +23,13 @@ type DatabaseConfig struct {
 	Password string
 	DBName   string
 	SSLMode  string
+}
+
+type RedisConfig struct {
+	Host     string
+	Port     string
+	Password string
+	DB       int
 }
 
 type GRPCConfig struct {
@@ -42,6 +50,12 @@ func Load() *Config {
 			Password: getEnv("DB_PASSWORD", "postgres"),
 			DBName:   getEnv("DB_NAME", "vave_db"),
 			SSLMode:  getEnv("DB_SSL_MODE", "disable"),
+		},
+		Redis: RedisConfig{
+			Host:     getEnv("REDIS_HOST", "localhost"),
+			Port:     getEnv("REDIS_PORT", "6379"),
+			Password: getEnv("REDIS_PASSWORD", ""),
+			DB:       0,
 		},
 		GRPC: GRPCConfig{
 			Port: getEnv("GRPC_PORT", "50051"),
