@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/vave-tool/backend/internal/constants"
 	"github.com/vave-tool/backend/internal/domain"
 )
 
@@ -27,7 +27,7 @@ func (s *productService) ListProducts(ctx context.Context) ([]*domain.Product, e
 }
 
 func (s *productService) GetProduct(ctx context.Context, id string) (*domain.Product, error) {
-	cacheKey := fmt.Sprintf("product:%s", id)
+	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, id)
 
 	cached, err := s.redisClient.Get(ctx, cacheKey).Result()
 	if err == nil {
@@ -43,7 +43,7 @@ func (s *productService) GetProduct(ctx context.Context, id string) (*domain.Pro
 	}
 
 	if productJSON, err := json.Marshal(product); err == nil {
-		s.redisClient.Set(ctx, cacheKey, productJSON, 15*time.Minute)
+		s.redisClient.Set(ctx, cacheKey, productJSON, constants.ProductCacheTTL)
 	}
 
 	return product, nil
@@ -58,7 +58,7 @@ func (s *productService) UpdateProduct(ctx context.Context, product *domain.Prod
 		return err
 	}
 
-	cacheKey := fmt.Sprintf("product:%s", product.ID)
+	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, product.ID)
 	s.redisClient.Del(ctx, cacheKey)
 
 	return nil
@@ -69,7 +69,7 @@ func (s *productService) DeleteProduct(ctx context.Context, id string) error {
 		return err
 	}
 
-	cacheKey := fmt.Sprintf("product:%s", id)
+	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, id)
 	s.redisClient.Del(ctx, cacheKey)
 
 	return nil
