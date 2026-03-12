@@ -54,9 +54,23 @@ func (s *productService) CreateProduct(ctx context.Context, product *domain.Prod
 }
 
 func (s *productService) UpdateProduct(ctx context.Context, product *domain.Product) error {
-	return s.repo.Update(ctx, product)
+	if err := s.repo.Update(ctx, product); err != nil {
+		return err
+	}
+
+	cacheKey := fmt.Sprintf("product:%s", product.ID)
+	s.redisClient.Del(ctx, cacheKey)
+
+	return nil
 }
 
 func (s *productService) DeleteProduct(ctx context.Context, id string) error {
-	return s.repo.Delete(ctx, id)
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	cacheKey := fmt.Sprintf("product:%s", id)
+	s.redisClient.Del(ctx, cacheKey)
+
+	return nil
 }
