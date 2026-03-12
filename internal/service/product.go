@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/vave-tool/internal/constants"
@@ -17,6 +18,7 @@ type productService struct {
 	repo        domain.ProductRepository
 	redisClient *redis.Client
 	logger      *observability.Logger
+	metrics     *observability.Metrics
 }
 
 func NewProductService(repo domain.ProductRepository, redisClient *redis.Client, logger *observability.Logger) domain.ProductService {
@@ -24,6 +26,7 @@ func NewProductService(repo domain.ProductRepository, redisClient *redis.Client,
 		repo:        repo,
 		redisClient: redisClient,
 		logger:      logger,
+		metrics:     observability.GetMetrics(),
 	}
 }
 
@@ -54,17 +57,27 @@ func (s *productService) GetProduct(ctx context.Context, id string) (*domain.Pro
 	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, id)
 
 	s.logger.Debug(ctx, "Checking cache for product", zap.String("product_id", id))
+	redisStart := time.Now()
 	cached, err := s.redisClient.Get(ctx, cacheKey).Result()
+	if s.metrics != nil {
+		s.metrics.RecordRedisOp(ctx, "get", time.Since(redisStart), err)
+	}
 	if err == nil {
 		var product domain.Product
 		if err := json.Unmarshal([]byte(cached), &product); err == nil {
 			span.SetAttributes(attribute.Bool("cache_hit", true))
+			if s.metrics != nil {
+				s.metrics.RecordCacheAccess(ctx, "get_product", true)
+			}
 			s.logger.Debug(ctx, "Product found in cache", zap.String("product_id", id))
 			return &product, nil
 		}
 	}
 
 	span.SetAttributes(attribute.Bool("cache_hit", false))
+	if s.metrics != nil {
+		s.metrics.RecordCacheAccess(ctx, "get_product", false)
+	}
 	s.logger.Debug(ctx, "Product not in cache, fetching from repository", zap.String("product_id", id))
 
 	product, err := s.repo.GetByID(ctx, id)
@@ -74,7 +87,11 @@ func (s *productService) GetProduct(ctx context.Context, id string) (*domain.Pro
 	}
 
 	if productJSON, err := json.Marshal(product); err == nil {
-		s.redisClient.Set(ctx, cacheKey, productJSON, constants.ProductCacheTTL)
+		redisStart := time.Now()
+		setErr := s.redisClient.Set(ctx, cacheKey, productJSON, constants.ProductCacheTTL).Err()
+		if s.metrics != nil {
+			s.metrics.RecordRedisOp(ctx, "set", time.Since(redisStart), setErr)
+		}
 		s.logger.Debug(ctx, "Product cached", zap.String("product_id", id))
 	}
 
@@ -115,7 +132,11 @@ func (s *productService) UpdateProduct(ctx context.Context, product *domain.Prod
 	}
 
 	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, product.ID)
-	s.redisClient.Del(ctx, cacheKey)
+	redisStart := time.Now()
+	delErr := s.redisClient.Del(ctx, cacheKey).Err()
+	if s.metrics != nil {
+		s.metrics.RecordRedisOp(ctx, "delete", time.Since(redisStart), delErr)
+	}
 	s.logger.Debug(ctx, "Product cache invalidated", zap.String("product_id", product.ID))
 
 	return nil
@@ -135,7 +156,11 @@ func (s *productService) DeleteProduct(ctx context.Context, id string) error {
 	}
 
 	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, id)
-	s.redisClient.Del(ctx, cacheKey)
+	redisStart := time.Now()
+	delErr := s.redisClient.Del(ctx, cacheKey).Err()
+	if s.metrics != nil {
+		s.metrics.RecordRedisOp(ctx, "delete", time.Since(redisStart), delErr)
+	}
 	s.logger.Debug(ctx, "Product cache invalidated", zap.String("product_id", id))
 
 	return nil

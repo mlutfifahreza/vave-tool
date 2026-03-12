@@ -4,21 +4,26 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/vave-tool/internal/domain"
+	"github.com/vave-tool/internal/observability"
 )
 
 type productRepository struct {
-	db *sql.DB
+	db      *sql.DB
+	metrics *observability.Metrics
 }
 
 func NewProductRepository(db *sql.DB) domain.ProductRepository {
 	return &productRepository{
-		db: db,
+		db:      db,
+		metrics: observability.GetMetrics(),
 	}
 }
 
 func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error) {
+	start := time.Now()
 	query := `
 		SELECT id, name, description, price, stock_quantity, category, sku, is_active, created_at, updated_at
 		FROM products
@@ -27,6 +32,9 @@ func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error)
 	`
 
 	rows, err := r.db.QueryContext(ctx, query)
+	if r.metrics != nil {
+		r.metrics.RecordDBCall(ctx, "list_products", time.Since(start), err)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +69,7 @@ func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error)
 }
 
 func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Product, error) {
+	start := time.Now()
 	query := `
 		SELECT id, name, description, price, stock_quantity, category, sku, is_active, created_at, updated_at
 		FROM products
@@ -81,6 +90,10 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 		&p.UpdatedAt,
 	)
 
+	if r.metrics != nil {
+		r.metrics.RecordDBCall(ctx, "get_product", time.Since(start), err)
+	}
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrNotFound
@@ -92,6 +105,7 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 }
 
 func (r *productRepository) Create(ctx context.Context, product *domain.Product) error {
+	start := time.Now()
 	query := `
 		INSERT INTO products (name, description, price, stock_quantity, category, sku, is_active)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -110,10 +124,15 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 		product.IsActive,
 	).Scan(&product.ID, &product.CreatedAt, &product.UpdatedAt)
 
+	if r.metrics != nil {
+		r.metrics.RecordDBCall(ctx, "create_product", time.Since(start), err)
+	}
+
 	return err
 }
 
 func (r *productRepository) Update(ctx context.Context, product *domain.Product) error {
+	start := time.Now()
 	query := `
 		UPDATE products
 		SET name = $1, description = $2, price = $3, stock_quantity = $4, 
@@ -135,6 +154,10 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 		product.ID,
 	).Scan(&product.UpdatedAt)
 
+	if r.metrics != nil {
+		r.metrics.RecordDBCall(ctx, "update_product", time.Since(start), err)
+	}
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.ErrNotFound
@@ -146,9 +169,13 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 }
 
 func (r *productRepository) Delete(ctx context.Context, id string) error {
+	start := time.Now()
 	query := `DELETE FROM products WHERE id = $1`
 
 	result, err := r.db.ExecContext(ctx, query, id)
+	if r.metrics != nil {
+		r.metrics.RecordDBCall(ctx, "delete_product", time.Since(start), err)
+	}
 	if err != nil {
 		return err
 	}

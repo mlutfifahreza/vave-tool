@@ -61,6 +61,12 @@ func InitTelemetry(serviceName, serviceVersion, otelEndpoint string) (*Telemetry
 		propagation.Baggage{},
 	))
 
+	metrics, err := InitMetrics()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize metrics: %w", err)
+	}
+	SetGlobalMetrics(metrics)
+
 	return &Telemetry{
 		TracerProvider: tracerProvider,
 		MeterProvider:  meterProvider.Provider,
@@ -116,10 +122,32 @@ func initMetrics(res *resource.Resource) (*struct {
 		},
 	)
 
+	dbHistogramView := metric.NewView(
+		metric.Instrument{Name: "db_call_duration_seconds"},
+		metric.Stream{
+			Aggregation: metric.AggregationExplicitBucketHistogram{
+				Boundaries: []float64{
+					0.0001, 0.0005, 0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0,
+				},
+			},
+		},
+	)
+
+	redisHistogramView := metric.NewView(
+		metric.Instrument{Name: "redis_operation_duration_seconds"},
+		metric.Stream{
+			Aggregation: metric.AggregationExplicitBucketHistogram{
+				Boundaries: []float64{
+					0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5,
+				},
+			},
+		},
+	)
+
 	meterProvider := metric.NewMeterProvider(
 		metric.WithResource(res),
 		metric.WithReader(exporter),
-		metric.WithView(histogramView),
+		metric.WithView(histogramView, dbHistogramView, redisHistogramView),
 	)
 
 	handler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
