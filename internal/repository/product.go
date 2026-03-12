@@ -23,6 +23,9 @@ func NewProductRepository(db *sql.DB) domain.ProductRepository {
 }
 
 func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error) {
+	ctx, span := observability.StartSpan(ctx, "Repository.ListProducts")
+	defer span.End()
+
 	start := time.Now()
 	query := `
 		SELECT id, name, description, price, stock_quantity, category, sku, is_active, created_at, updated_at
@@ -36,6 +39,7 @@ func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error)
 		r.metrics.RecordDBCall(ctx, "list_products", time.Since(start), err)
 	}
 	if err != nil {
+		observability.RecordError(span, err, "Failed to query products")
 		return nil, err
 	}
 	defer rows.Close()
@@ -69,6 +73,9 @@ func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error)
 }
 
 func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Product, error) {
+	ctx, span := observability.StartSpan(ctx, "Repository.GetProductByID")
+	defer span.End()
+
 	start := time.Now()
 	query := `
 		SELECT id, name, description, price, stock_quantity, category, sku, is_active, created_at, updated_at
@@ -96,8 +103,10 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			observability.RecordError(span, domain.ErrNotFound, "Product not found")
 			return nil, domain.ErrNotFound
 		}
+		observability.RecordError(span, err, "Failed to query product")
 		return nil, err
 	}
 
@@ -105,6 +114,9 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 }
 
 func (r *productRepository) Create(ctx context.Context, product *domain.Product) error {
+	ctx, span := observability.StartSpan(ctx, "Repository.CreateProduct")
+	defer span.End()
+
 	start := time.Now()
 	query := `
 		INSERT INTO products (name, description, price, stock_quantity, category, sku, is_active)
@@ -128,10 +140,17 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 		r.metrics.RecordDBCall(ctx, "create_product", time.Since(start), err)
 	}
 
+	if err != nil {
+		observability.RecordError(span, err, "Failed to insert product")
+	}
+
 	return err
 }
 
 func (r *productRepository) Update(ctx context.Context, product *domain.Product) error {
+	ctx, span := observability.StartSpan(ctx, "Repository.UpdateProduct")
+	defer span.End()
+
 	start := time.Now()
 	query := `
 		UPDATE products
@@ -160,8 +179,10 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			observability.RecordError(span, domain.ErrNotFound, "Product not found")
 			return domain.ErrNotFound
 		}
+		observability.RecordError(span, err, "Failed to update product")
 		return err
 	}
 
@@ -169,6 +190,9 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 }
 
 func (r *productRepository) Delete(ctx context.Context, id string) error {
+	ctx, span := observability.StartSpan(ctx, "Repository.DeleteProduct")
+	defer span.End()
+
 	start := time.Now()
 	query := `DELETE FROM products WHERE id = $1`
 
@@ -177,15 +201,18 @@ func (r *productRepository) Delete(ctx context.Context, id string) error {
 		r.metrics.RecordDBCall(ctx, "delete_product", time.Since(start), err)
 	}
 	if err != nil {
+		observability.RecordError(span, err, "Failed to delete product")
 		return err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		observability.RecordError(span, err, "Failed to get rows affected")
 		return err
 	}
 
 	if rowsAffected == 0 {
+		observability.RecordError(span, domain.ErrNotFound, "Product not found")
 		return domain.ErrNotFound
 	}
 

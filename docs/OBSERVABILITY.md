@@ -126,7 +126,7 @@ View logs in Grafana by navigating to Explore → Loki
 Every request is traced through the entire stack:
 - HTTP handler
 - Service layer
-- Database calls
+- Repository operations (database calls)
 - Cache operations
 
 Each span includes:
@@ -135,7 +135,28 @@ Each span includes:
 - Attributes (product_id, cache_hit, etc.)
 - Status (OK/Error)
 
-View traces in Grafana by navigating to Explore → Tempo
+**Viewing traces in Grafana**:
+
+1. **Using Trace IDs from Logs** (Recommended):
+   - Go to Explore → Select **Loki**
+   - Query: `{service_name="vave-tool-api"}`
+   - Find a log entry and click on its `trace_id` value
+   - Grafana will automatically jump to the trace in Tempo
+
+2. **Direct Trace Lookup**:
+   - Go to Explore → Select **Tempo**
+   - Select "TraceQL" query type
+   - Paste a trace ID (get from logs or run `./script/test_tempo.sh`)  
+   - Click "Run query"
+
+3. **View Trace Spans**:
+   - Each trace shows the complete request flow:
+     - `HTTP Request` → Top-level HTTP handler span
+     - `ProductService.GetProduct` → Service layer span
+     - `Repository.GetProductByID` → Database layer span
+     - Redis cache operations spans
+
+**Note**: The Tempo search API (browsing all traces by service name) requires distributed mode configuration. In this single-instance setup, use trace IDs from logs to view specific traces. All traces are stored and fully functional in Grafana when accessed by ID.
 
 ## Correlation IDs - The Magic Connection
 
@@ -309,6 +330,18 @@ docker logs otel-collector
 Ensure the application is configured to send traces to the correct endpoint:
 - gRPC: `localhost:4319`
 - HTTP: `localhost:4320`
+
+**To verify traces are working:**
+```bash
+# Run the test script
+./script/test_tempo.sh
+```
+
+**Note on Tempo Search**: The Tempo search/browse API showing "empty ring" error is expected in single-instance mode. This doesn't affect trace storage or viewing. To view traces:
+1. Get trace IDs from application logs (they contain `trace_id` field)
+2. Or click trace links in Loki logs
+3. Or run `./script/test_tempo.sh` to get a recent trace ID
+4. Paste the trace ID in Grafana → Explore → Tempo
 
 ## Learn More
 

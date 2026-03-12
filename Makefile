@@ -1,4 +1,4 @@
-.PHONY: help build run test proto migrate-up migrate-down seed-products swagger obs-up obs-down obs-logs obs-restart
+.PHONY: help build run test proto migrate-up migrate-down seed-products swagger obs-up obs-down obs-logs obs-restart test-tempo
 
 help:
 	@echo "Available commands:"
@@ -16,6 +16,7 @@ help:
 	@echo "  make obs-down    - Stop observability stack"
 	@echo "  make obs-restart - Restart observability stack"
 	@echo "  make obs-logs    - View observability container logs"
+	@echo "  make test-tempo  - Test Tempo integration and get a trace ID"
 
 run:
 	go run cmd/api/main.go
@@ -95,6 +96,9 @@ obs-restart:
 
 obs-logs:
 	docker-compose logs -f
+
+test-tempo:
+	@./script/test_tempo.sh
 
 build:
 	@echo "Building application..."
