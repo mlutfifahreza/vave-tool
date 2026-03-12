@@ -79,14 +79,16 @@ func (s *productService) ListProducts(ctx context.Context, params domain.Paginat
 		zap.Int("page", params.Page),
 	)
 
-	if productsJSON, err := json.Marshal(products); err == nil {
-		redisStart := time.Now()
-		setErr := s.redisClient.Set(ctx, cacheKey, productsJSON, 30*time.Second).Err()
-		if s.metrics != nil {
-			s.metrics.RecordRedisOp(ctx, "set", time.Since(redisStart), setErr)
+	go func() {
+		if productsJSON, err := json.Marshal(products); err == nil {
+			redisStart := time.Now()
+			setErr := s.redisClient.Set(context.Background(), cacheKey, productsJSON, 30*time.Second).Err()
+			if s.metrics != nil {
+				s.metrics.RecordRedisOp(context.Background(), "set", time.Since(redisStart), setErr)
+			}
+			s.logger.Debug(context.Background(), "Product list cached", zap.Int("count", len(products)))
 		}
-		s.logger.Debug(ctx, "Product list cached", zap.Int("count", len(products)))
-	}
+	}()
 
 	return &domain.PaginatedProducts{
 		Products: products,
@@ -131,14 +133,16 @@ func (s *productService) GetProduct(ctx context.Context, id string) (*domain.Pro
 		return nil, err
 	}
 
-	if productJSON, err := json.Marshal(product); err == nil {
-		redisStart := time.Now()
-		setErr := s.redisClient.Set(ctx, cacheKey, productJSON, constants.ProductCacheTTL).Err()
-		if s.metrics != nil {
-			s.metrics.RecordRedisOp(ctx, "set", time.Since(redisStart), setErr)
+	go func() {
+		if productJSON, err := json.Marshal(product); err == nil {
+			redisStart := time.Now()
+			setErr := s.redisClient.Set(context.Background(), cacheKey, productJSON, constants.ProductCacheTTL).Err()
+			if s.metrics != nil {
+				s.metrics.RecordRedisOp(context.Background(), "set", time.Since(redisStart), setErr)
+			}
+			s.logger.Debug(context.Background(), "Product cached", zap.String("product_id", id))
 		}
-		s.logger.Debug(ctx, "Product cached", zap.String("product_id", id))
-	}
+	}()
 
 	return product, nil
 }
@@ -176,13 +180,15 @@ func (s *productService) UpdateProduct(ctx context.Context, product *domain.Prod
 		return err
 	}
 
-	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, product.ID)
-	redisStart := time.Now()
-	delErr := s.redisClient.Del(ctx, cacheKey).Err()
-	if s.metrics != nil {
-		s.metrics.RecordRedisOp(ctx, "delete", time.Since(redisStart), delErr)
-	}
-	s.logger.Debug(ctx, "Product cache invalidated", zap.String("product_id", product.ID))
+	go func() {
+		cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, product.ID)
+		redisStart := time.Now()
+		delErr := s.redisClient.Del(context.Background(), cacheKey).Err()
+		if s.metrics != nil {
+			s.metrics.RecordRedisOp(context.Background(), "delete", time.Since(redisStart), delErr)
+		}
+		s.logger.Debug(context.Background(), "Product cache invalidated", zap.String("product_id", product.ID))
+	}()
 
 	return nil
 }
@@ -200,13 +206,15 @@ func (s *productService) DeleteProduct(ctx context.Context, id string) error {
 		return err
 	}
 
-	cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, id)
-	redisStart := time.Now()
-	delErr := s.redisClient.Del(ctx, cacheKey).Err()
-	if s.metrics != nil {
-		s.metrics.RecordRedisOp(ctx, "delete", time.Since(redisStart), delErr)
-	}
-	s.logger.Debug(ctx, "Product cache invalidated", zap.String("product_id", id))
+	go func() {
+		cacheKey := fmt.Sprintf(constants.ProductCacheKeyPrefix, id)
+		redisStart := time.Now()
+		delErr := s.redisClient.Del(context.Background(), cacheKey).Err()
+		if s.metrics != nil {
+			s.metrics.RecordRedisOp(context.Background(), "delete", time.Since(redisStart), delErr)
+		}
+		s.logger.Debug(context.Background(), "Product cache invalidated", zap.String("product_id", id))
+	}()
 
 	return nil
 }

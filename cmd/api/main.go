@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -41,6 +42,10 @@ import (
 // @schemes http
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
+
 	cfg := config.Load()
 
 	serviceName := os.Getenv("SERVICE_NAME")
@@ -62,6 +67,7 @@ func main() {
 		serviceName,
 		serviceVersion,
 		otelEndpoint,
+		cfg.LogLevel,
 	)
 	if err != nil {
 		log.Fatalf("Failed to initialize telemetry: %v", err)

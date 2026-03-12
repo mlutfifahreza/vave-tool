@@ -9,6 +9,7 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	GRPC     GRPCConfig
+	LogLevel string
 }
 
 type ServerConfig struct {
@@ -61,6 +62,7 @@ func Load() *Config {
 			Port: getEnv("GRPC_PORT", "50051"),
 			Host: getEnv("GRPC_HOST", "0.0.0.0"),
 		},
+		LogLevel: getEnv("LOG_LEVEL", "info"),
 	}
 }
 

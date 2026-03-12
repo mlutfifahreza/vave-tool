@@ -29,7 +29,7 @@ type Telemetry struct {
 	Logger         *zap.Logger
 }
 
-func InitTelemetry(serviceName, serviceVersion, otelEndpoint string) (*Telemetry, error) {
+func InitTelemetry(serviceName, serviceVersion, otelEndpoint, logLevel string) (*Telemetry, error) {
 	ctx := context.Background()
 
 	res, err := resource.New(ctx,
@@ -52,7 +52,7 @@ func InitTelemetry(serviceName, serviceVersion, otelEndpoint string) (*Telemetry
 		return nil, fmt.Errorf("failed to initialize metrics: %w", err)
 	}
 
-	logger := initLogger(serviceName)
+	logger := initLogger(serviceName, logLevel)
 
 	otel.SetTracerProvider(tracerProvider)
 	otel.SetMeterProvider(meterProvider.Provider)
@@ -161,12 +161,25 @@ func initMetrics(res *resource.Resource) (*struct {
 	}, nil
 }
 
-func initLogger(serviceName string) *zap.Logger {
+func initLogger(serviceName, logLevel string) *zap.Logger {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.TimeKey = "timestamp"
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	config.InitialFields = map[string]interface{}{
 		"service_name": serviceName,
+	}
+
+	switch logLevel {
+	case "debug":
+		config.Level = zap.NewAtomicLevelAt(zapcore.DebugLevel)
+	case "info":
+		config.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
+	case "warn":
+		config.Level = zap.NewAtomicLevelAt(zapcore.WarnLevel)
+	case "error":
+		config.Level = zap.NewAtomicLevelAt(zapcore.ErrorLevel)
+	default:
+		config.Level = zap.NewAtomicLevelAt(zapcore.InfoLevel)
 	}
 
 	logger, err := config.Build()
