@@ -222,7 +222,7 @@
       },
       "targets": [
         {
-          "expr": "(sum(rate(http_requests_total{status_code=~\"2..\",path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path, status_code) / on(method, path) group_left(status_code) sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path)) * 100",
+          "expr": "(sum(rate(http_requests_total{status_code=~\"2..\",path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path, status_code) / on(method, path) group_left() sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path)) * 100",
           "legendFormat": "{{status_code}} - {{method}} {{path}}",
           "refId": "A"
         }
@@ -298,7 +298,7 @@
       },
       "targets": [
         {
-          "expr": "(sum(rate(http_requests_total{status_code=~\"[4-5]..\",path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path, status_code) / on(method, path) group_left(status_code) sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path)) * 100",
+          "expr": "(sum(rate(http_requests_total{status_code=~\"[4-5]..\",path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path, status_code) / on(method, path) group_left() sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path)) * 100",
           "legendFormat": "{{status_code}} - {{method}} {{path}}",
           "refId": "A"
         }
