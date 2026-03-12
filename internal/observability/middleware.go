@@ -69,9 +69,14 @@ func (m *Middleware) Handler(next http.Handler) http.Handler {
 			duration := time.Since(start).Seconds()
 			statusCode := rr.statusCode
 
+			routePattern := r.Pattern
+			if routePattern == "" {
+				routePattern = r.URL.Path
+			}
+
 			attrs := []attribute.KeyValue{
 				attribute.String("method", r.Method),
-				attribute.String("path", r.URL.Path),
+				attribute.String("path", routePattern),
 				attribute.Int("status_code", statusCode),
 			}
 
@@ -90,7 +95,11 @@ func (m *Middleware) Handler(next http.Handler) http.Handler {
 		}),
 		"HTTP Request",
 		otelhttp.WithSpanNameFormatter(func(operation string, r *http.Request) string {
-			return r.Method + " " + r.URL.Path
+			pattern := r.Pattern
+			if pattern == "" {
+				pattern = r.Method + " " + r.URL.Path
+			}
+			return pattern
 		}),
 	)
 
