@@ -20,8 +20,11 @@ func NewRouter(productHandler *handler.ProductHandler) *Router {
 func (r *Router) SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/api/products", r.productHandler.List)
-	mux.HandleFunc("/api/products/{id}", r.productHandler.GetByID)
+	mux.HandleFunc("GET /api/products", r.productHandler.List)
+	mux.HandleFunc("GET /api/products/{id}", r.productHandler.GetByID)
+	mux.HandleFunc("POST /api/products", r.productHandler.Create)
+	mux.HandleFunc("PUT /api/products/{id}", r.productHandler.Update)
+	mux.HandleFunc("DELETE /api/products/{id}", r.productHandler.Delete)
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)

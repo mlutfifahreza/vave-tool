@@ -9,6 +9,9 @@ import "google/protobuf/timestamp.proto";
 service ProductService {
   rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
   rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
 }
 
 message Product {
@@ -36,4 +39,41 @@ message GetProductRequest {
 
 message GetProductResponse {
   Product product = 1;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  double price = 3;
+  int32 stock_quantity = 4;
+  string category = 5;
+  string sku = 6;
+  bool is_active = 7;
+}
+
+message CreateProductResponse {
+  Product product = 1;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  int32 stock_quantity = 5;
+  string category = 6;
+  string sku = 7;
+  bool is_active = 8;
+}
+
+message UpdateProductResponse {
+  Product product = 1;
+}
+
+message DeleteProductRequest {
+  string id = 1;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
 }

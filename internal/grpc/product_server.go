@@ -55,6 +55,92 @@ func (s *ProductServer) GetProduct(ctx context.Context, req *proto.GetProductReq
 	}, nil
 }
 
+func (s *ProductServer) CreateProduct(ctx context.Context, req *proto.CreateProductRequest) (*proto.CreateProductResponse, error) {
+	if req.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "product name is required")
+	}
+
+	product := &domain.Product{
+		Name:          req.Name,
+		Price:         req.Price,
+		StockQuantity: int(req.StockQuantity),
+		IsActive:      req.IsActive,
+	}
+
+	if req.Description != "" {
+		product.Description = &req.Description
+	}
+	if req.Category != "" {
+		product.Category = &req.Category
+	}
+	if req.Sku != "" {
+		product.SKU = &req.Sku
+	}
+
+	if err := s.service.CreateProduct(ctx, product); err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to create product: %v", err)
+	}
+
+	return &proto.CreateProductResponse{
+		Product: toPBProduct(product),
+	}, nil
+}
+
+func (s *ProductServer) UpdateProduct(ctx context.Context, req *proto.UpdateProductRequest) (*proto.UpdateProductResponse, error) {
+	if req.Id == "" {
+		return nil, status.Error(codes.InvalidArgument, "product id is required")
+	}
+	if req.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "product name is required")
+	}
+
+	product := &domain.Product{
+		ID:            req.Id,
+		Name:          req.Name,
+		Price:         req.Price,
+		StockQuantity: int(req.StockQuantity),
+		IsActive:      req.IsActive,
+	}
+
+	if req.Description != "" {
+		product.Description = &req.Description
+	}
+	if req.Category != "" {
+		product.Category = &req.Category
+	}
+	if req.Sku != "" {
+		product.SKU = &req.Sku
+	}
+
+	if err := s.service.UpdateProduct(ctx, product); err != nil {
+		if err == domain.ErrNotFound {
+			return nil, status.Error(codes.NotFound, "product not found")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to update product: %v", err)
+	}
+
+	return &proto.UpdateProductResponse{
+		Product: toPBProduct(product),
+	}, nil
+}
+
+func (s *ProductServer) DeleteProduct(ctx context.Context, req *proto.DeleteProductRequest) (*proto.DeleteProductResponse, error) {
+	if req.Id == "" {
+		return nil, status.Error(codes.InvalidArgument, "product id is required")
+	}
+
+	if err := s.service.DeleteProduct(ctx, req.Id); err != nil {
+		if err == domain.ErrNotFound {
+			return nil, status.Error(codes.NotFound, "product not found")
+		}
+		return nil, status.Errorf(codes.Internal, "failed to delete product: %v", err)
+	}
+
+	return &proto.DeleteProductResponse{
+		Success: true,
+	}, nil
+}
+
 func toPBProduct(p *domain.Product) *proto.Product {
 	pbProduct := &proto.Product{
 		Id:            p.ID,
