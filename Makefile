@@ -1,4 +1,4 @@
-.PHONY: help build run test proto migrate-up migrate-down seed-products swagger obs-up obs-down obs-logs obs-restart test-tempo
+.PHONY: help build run test proto migrate-up migrate-down seed-products seed-products-py swagger obs-up obs-down obs-logs obs-restart test-tempo
 
 help:
 	@echo "Available commands:"
@@ -9,7 +9,8 @@ help:
 	@echo "  make swagger     - Generate Swagger documentation"
 	@echo "  make migrate-up  - Run database migrations up"
 	@echo "  make migrate-down - Run database migrations down"
-	@echo "  make seed-products - Insert dummy products (dev only)"
+	@echo "  make seed-products - Insert 10 dummy products (dev only)"
+	@echo "  make seed-products-py COUNT=X - Insert X products using Python batch insert"
 	@echo ""
 	@echo "Observability commands:"
 	@echo "  make obs-up      - Start observability stack (Prometheus, Loki, Tempo, Grafana)"
@@ -62,6 +63,11 @@ seed-products:
 		('Standing Desk', 'Electric height-adjustable standing desk', 599.00, 15, 'Furniture', 'DESK-STAND-EL', true) \
 		ON CONFLICT (sku) DO NOTHING;"
 	@echo "Dummy products inserted successfully!"
+
+seed-products-py:
+	@echo "Seeding products using Python script..."
+	@python3 script/seed_products.py $(COUNT)
+	@echo "✓ Seeding complete!"
 
 deps:
 	go mod download
