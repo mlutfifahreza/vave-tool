@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -89,7 +90,7 @@ func main() {
 
 	telemetry.Logger.Info("Database connection established")
 
-	redisClient, err := db.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password, cfg.Redis.DB)
+	redisClient, err := db.NewRedisClient(cfg.Redis)
 	if err != nil {
 		log.Fatalf("Failed to connect to Redis: %v", err)
 	}
@@ -114,10 +115,19 @@ func main() {
 	proto.RegisterProductServiceServer(grpcServer, productGRPCServer)
 	reflection.Register(grpcServer)
 
+	httpAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
+	httpServer := &http.Server{
+		Addr:           httpAddr,
+		Handler:        httpMux,
+		ReadTimeout:    cfg.Server.ReadTimeout,
+		WriteTimeout:   cfg.Server.WriteTimeout,
+		IdleTimeout:    cfg.Server.IdleTimeout,
+		MaxHeaderBytes: cfg.Server.MaxHeaderBytes,
+	}
+
 	go func() {
-		httpAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 		telemetry.Logger.Info(fmt.Sprintf("Starting HTTP server on %s", httpAddr))
-		if err := http.ListenAndServe(httpAddr, httpMux); err != nil {
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("HTTP server failed: %v", err)
 		}
 	}()
@@ -139,6 +149,13 @@ func main() {
 	<-quit
 
 	telemetry.Logger.Info("Shutting down servers...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := httpServer.Shutdown(ctx); err != nil {
+		telemetry.Logger.Error(fmt.Sprintf("HTTP server shutdown error: %v", err))
+	}
 	grpcServer.GracefulStop()
 	telemetry.Logger.Info("Servers stopped")
 }
