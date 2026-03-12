@@ -22,9 +22,11 @@ func NewProductRepository(db *sql.DB) domain.ProductRepository {
 	}
 }
 
-func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error) {
+func (r *productRepository) List(ctx context.Context, params domain.PaginationParams) ([]*domain.Product, error) {
 	ctx, span := observability.StartSpan(ctx, "Repository.ListProducts")
 	defer span.End()
+
+	offset := (params.Page - 1) * params.Size
 
 	start := time.Now()
 	query := `
@@ -32,9 +34,10 @@ func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error)
 		FROM products
 		WHERE is_active = true
 		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
 	`
 
-	rows, err := r.db.QueryContext(ctx, query)
+	rows, err := r.db.QueryContext(ctx, query, params.Size, offset)
 	if r.metrics != nil {
 		r.metrics.RecordDBCall(ctx, "list_products", time.Since(start), err)
 	}
@@ -70,6 +73,26 @@ func (r *productRepository) List(ctx context.Context) ([]*domain.Product, error)
 	}
 
 	return products, nil
+}
+
+func (r *productRepository) Count(ctx context.Context) (int64, error) {
+	ctx, span := observability.StartSpan(ctx, "Repository.CountProducts")
+	defer span.End()
+
+	start := time.Now()
+	query := `SELECT COUNT(*) FROM products WHERE is_active = true`
+
+	var count int64
+	err := r.db.QueryRowContext(ctx, query).Scan(&count)
+	if r.metrics != nil {
+		r.metrics.RecordDBCall(ctx, "count_products", time.Since(start), err)
+	}
+	if err != nil {
+		observability.RecordError(span, err, "Failed to count products")
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Product, error) {

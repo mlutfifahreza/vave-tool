@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/vave-tool/internal/api/response"
 	"github.com/vave-tool/internal/domain"
@@ -24,27 +25,64 @@ func NewProductHandler(service domain.ProductService, logger *observability.Logg
 
 // List godoc
 // @Summary List all products
-// @Description Get a list of all products
+// @Description Get a paginated list of products
 // @Tags products
 // @Accept json
 // @Produce json
-// @Success 200 {object} response.Response{data=[]domain.Product}
+// @Param page query int false "Page number" default(1)
+// @Param size query int false "Items per page" default(10)
+// @Success 200 {object} response.Response{data=domain.PaginatedProducts}
+// @Failure 400 {object} response.Response
 // @Failure 500 {object} response.Response
 // @Router /api/products [get]
 func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	h.logger.Info(ctx, "Listing all products")
+	const (
+		defaultPage = 1
+		defaultSize = 10
+		maxSize     = 100
+	)
 
-	products, err := h.service.ListProducts(ctx)
+	params := domain.PaginationParams{
+		Page: defaultPage,
+		Size: defaultSize,
+	}
+
+	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
+		if page, err := strconv.Atoi(pageStr); err == nil && page > 0 {
+			params.Page = page
+		} else {
+			params.Page = defaultPage
+		}
+	}
+
+	if sizeStr := r.URL.Query().Get("size"); sizeStr != "" {
+		if size, err := strconv.Atoi(sizeStr); err == nil && size > 0 {
+			if size > maxSize {
+				params.Size = maxSize
+			} else {
+				params.Size = size
+			}
+		} else {
+			params.Size = defaultSize
+		}
+	}
+
+	h.logger.Info(ctx, "Listing products", zap.Int("page", params.Page), zap.Int("size", params.Size))
+
+	result, err := h.service.ListProducts(ctx, params)
 	if err != nil {
 		h.logger.Error(ctx, "Failed to fetch products", zap.Error(err))
 		response.Error(w, http.StatusInternalServerError, "Failed to fetch products")
 		return
 	}
 
-	h.logger.Info(ctx, "Products fetched successfully", zap.Int("count", len(products)))
-	response.Success(w, products)
+	h.logger.Info(ctx, "Products fetched successfully",
+		zap.Int("count", len(result.Products)),
+		zap.Int64("total", result.Pagination.TotalItems),
+	)
+	response.Success(w, result)
 }
 
 // GetByID godoc

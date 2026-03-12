@@ -18,8 +18,26 @@ type Product struct {
 	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }
 
+type PaginationParams struct {
+	Page int `json:"page"`
+	Size int `json:"size"`
+}
+
+type PaginationMetadata struct {
+	Page       int   `json:"page"`
+	Size       int   `json:"size"`
+	TotalItems int64 `json:"total_items"`
+	TotalPages int   `json:"total_pages"`
+}
+
+type PaginatedProducts struct {
+	Products   []*Product         `json:"products"`
+	Pagination PaginationMetadata `json:"pagination"`
+}
+
 type ProductRepository interface {
-	List(ctx context.Context) ([]*Product, error)
+	List(ctx context.Context, params PaginationParams) ([]*Product, error)
+	Count(ctx context.Context) (int64, error)
 	GetByID(ctx context.Context, id string) (*Product, error)
 	Create(ctx context.Context, product *Product) error
 	Update(ctx context.Context, product *Product) error
@@ -27,7 +45,7 @@ type ProductRepository interface {
 }
 
 type ProductService interface {
-	ListProducts(ctx context.Context) ([]*Product, error)
+	ListProducts(ctx context.Context, params PaginationParams) (*PaginatedProducts, error)
 	GetProduct(ctx context.Context, id string) (*Product, error)
 	CreateProduct(ctx context.Context, product *Product) error
 	UpdateProduct(ctx context.Context, product *Product) error

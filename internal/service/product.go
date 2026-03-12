@@ -30,22 +30,50 @@ func NewProductService(repo domain.ProductRepository, redisClient *redis.Client,
 	}
 }
 
-func (s *productService) ListProducts(ctx context.Context) ([]*domain.Product, error) {
+func (s *productService) ListProducts(ctx context.Context, params domain.PaginationParams) (*domain.PaginatedProducts, error) {
 	ctx, span := observability.StartSpan(ctx, "ProductService.ListProducts")
 	defer span.End()
 
-	s.logger.Debug(ctx, "Fetching products from repository")
+	s.logger.Debug(ctx, "Fetching products from repository", zap.Int("page", params.Page), zap.Int("size", params.Size))
 
-	products, err := s.repo.List(ctx)
+	products, err := s.repo.List(ctx, params)
 	if err != nil {
 		observability.RecordError(span, err, "Failed to list products")
 		return nil, err
 	}
 
-	span.SetAttributes(attribute.Int("product_count", len(products)))
-	s.logger.Debug(ctx, "Products fetched from repository", zap.Int("count", len(products)))
+	totalCount, err := s.repo.Count(ctx)
+	if err != nil {
+		observability.RecordError(span, err, "Failed to count products")
+		return nil, err
+	}
 
-	return products, nil
+	totalPages := int(totalCount) / params.Size
+	if int(totalCount)%params.Size > 0 {
+		totalPages++
+	}
+
+	span.SetAttributes(
+		attribute.Int("product_count", len(products)),
+		attribute.Int64("total_count", totalCount),
+		attribute.Int("page", params.Page),
+		attribute.Int("size", params.Size),
+	)
+	s.logger.Debug(ctx, "Products fetched from repository",
+		zap.Int("count", len(products)),
+		zap.Int64("total", totalCount),
+		zap.Int("page", params.Page),
+	)
+
+	return &domain.PaginatedProducts{
+		Products: products,
+		Pagination: domain.PaginationMetadata{
+			Page:       params.Page,
+			Size:       params.Size,
+			TotalItems: totalCount,
+			TotalPages: totalPages,
+		},
+	}, nil
 }
 
 func (s *productService) GetProduct(ctx context.Context, id string) (*domain.Product, error) {
