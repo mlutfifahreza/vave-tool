@@ -31,31 +31,17 @@ exporters:
     tls:
       insecure: true
 
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
-    labels:
-      resource:
-        service.name: "service_name"
-        job: "job"
-      attributes:
-        level: "severity"
-
-  logging:
-    loglevel: debug
+  debug:
+    verbosity: detailed
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch, attributes]
-      exporters: [otlp/tempo, logging]
+      exporters: [otlp/tempo, debug]
 
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch, attributes]
-      exporters: [prometheus, logging]
-
-    logs:
-      receivers: [otlp]
-      processors: [memory_limiter, batch, attributes]
-      exporters: [loki, logging]
+      exporters: [prometheus, debug]

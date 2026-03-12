@@ -31,8 +31,9 @@ echo ""
 echo "📝 Access the API at: http://localhost:8080"
 echo "📊 Metrics endpoint:  http://localhost:8080/metrics"
 echo "📚 API Documentation: http://localhost:8080/swagger/"
+echo "📊 Logs written to:   logs/api.log"
 echo ""
 echo "Press Ctrl+C to stop the application"
 echo ""
 
-./bin/api
+./bin/api 2>&1 | tee logs/api.log

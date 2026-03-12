@@ -43,10 +43,25 @@ import (
 func main() {
 	cfg := config.Load()
 
+	serviceName := os.Getenv("SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "vave-tool-api"
+	}
+
+	serviceVersion := os.Getenv("SERVICE_VERSION")
+	if serviceVersion == "" {
+		serviceVersion = "1.0.0"
+	}
+
+	otelEndpoint := os.Getenv("OTEL_ENDPOINT")
+	if otelEndpoint == "" {
+		otelEndpoint = "localhost:4319"
+	}
+
 	telemetry, err := observability.InitTelemetry(
-		"vave-tool-api",
-		"1.0.0",
-		"localhost:4319",
+		serviceName,
+		serviceVersion,
+		otelEndpoint,
 	)
 	if err != nil {
 		log.Fatalf("Failed to initialize telemetry: %v", err)
