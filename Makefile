@@ -1,4 +1,4 @@
-.PHONY: help build run test proto migrate-up migrate-down seed-products swagger
+.PHONY: help build run test proto migrate-up migrate-down seed-products swagger obs-up obs-down obs-logs obs-restart
 
 help:
 	@echo "Available commands:"
@@ -10,6 +10,12 @@ help:
 	@echo "  make migrate-up  - Run database migrations up"
 	@echo "  make migrate-down - Run database migrations down"
 	@echo "  make seed-products - Insert dummy products (dev only)"
+	@echo ""
+	@echo "Observability commands:"
+	@echo "  make obs-up      - Start observability stack (Prometheus, Loki, Tempo, Grafana)"
+	@echo "  make obs-down    - Stop observability stack"
+	@echo "  make obs-restart - Restart observability stack"
+	@echo "  make obs-logs    - View observability container logs"
 
 run:
 	go run cmd/api/main.go
@@ -62,3 +68,35 @@ deps:
 
 clean:
 	rm -rf bin/
+
+obs-up:
+	@echo "Starting observability stack..."
+	docker-compose up -d
+	@echo ""
+	@echo "Observability stack is starting..."
+	@echo "Grafana:     http://localhost:3000 (admin/admin)"
+	@echo "Prometheus:  http://localhost:9090"
+	@echo "Tempo:       http://localhost:3200"
+	@echo "Loki:        http://localhost:3100"
+	@echo ""
+	@echo "Waiting for services to be ready..."
+	@sleep 5
+	@echo "✓ Stack is ready!"
+
+obs-down:
+	@echo "Stopping observability stack..."
+	docker-compose down
+	@echo "✓ Stack stopped"
+
+obs-restart:
+	@echo "Restarting observability stack..."
+	docker-compose restart
+	@echo "✓ Stack restarted"
+
+obs-logs:
+	docker-compose logs -f
+
+build:
+	@echo "Building application..."
+	go build -o bin/api cmd/api/main.go
+	@echo "✓ Build complete: bin/api"

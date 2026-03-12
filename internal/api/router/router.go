@@ -3,17 +3,21 @@ package router
 import (
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/vave-tool/internal/api/handler"
+	"github.com/vave-tool/internal/observability"
 )
 
 type Router struct {
 	productHandler *handler.ProductHandler
+	middleware     *observability.Middleware
 }
 
-func NewRouter(productHandler *handler.ProductHandler) *Router {
+func NewRouter(productHandler *handler.ProductHandler, middleware *observability.Middleware) *Router {
 	return &Router{
 		productHandler: productHandler,
+		middleware:     middleware,
 	}
 }
 
@@ -31,9 +35,11 @@ func (r *Router) SetupRoutes() http.Handler {
 		w.Write([]byte("OK"))
 	})
 
+	mux.Handle("/metrics", promhttp.Handler())
+
 	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
-	return r.enableCORS(mux)
+	return r.middleware.Handler(r.enableCORS(mux))
 }
 
 func (r *Router) enableCORS(next http.Handler) http.Handler {

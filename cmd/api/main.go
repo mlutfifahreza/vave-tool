@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -17,6 +18,7 @@ import (
 	"github.com/vave-tool/internal/api/router"
 	"github.com/vave-tool/internal/config"
 	grpcHandler "github.com/vave-tool/internal/grpc"
+	"github.com/vave-tool/internal/observability"
 	"github.com/vave-tool/internal/pkg/db"
 	"github.com/vave-tool/internal/repository"
 	"github.com/vave-tool/internal/service"
@@ -41,13 +43,30 @@ import (
 func main() {
 	cfg := config.Load()
 
+	telemetry, err := observability.InitTelemetry(
+		"vave-tool-api",
+		"1.0.0",
+		"localhost:4319",
+	)
+	if err != nil {
+		log.Fatalf("Failed to initialize telemetry: %v", err)
+	}
+	defer func() {
+		if err := telemetry.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down telemetry: %v", err)
+		}
+	}()
+
+	obsLogger := observability.NewLogger(telemetry.Logger)
+	telemetry.Logger.Info("Starting Vave Tool API")
+
 	database, err := db.NewPostgresConnection(cfg.Database)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer database.Close()
 
-	log.Println("Database connection established")
+	telemetry.Logger.Info("Database connection established")
 
 	redisClient, err := db.NewRedisClient(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password, cfg.Redis.DB)
 	if err != nil {
@@ -55,13 +74,18 @@ func main() {
 	}
 	defer redisClient.Close()
 
-	log.Println("Redis connection established")
+	telemetry.Logger.Info("Redis connection established")
 
 	productRepo := repository.NewProductRepository(database)
-	productService := service.NewProductService(productRepo, redisClient)
-	productHandler := handler.NewProductHandler(productService)
+	productService := service.NewProductService(productRepo, redisClient, obsLogger)
+	productHandler := handler.NewProductHandler(productService, obsLogger)
 
-	httpRouter := router.NewRouter(productHandler)
+	middleware, err := observability.NewMiddleware(telemetry.Logger)
+	if err != nil {
+		log.Fatalf("Failed to create middleware: %v", err)
+	}
+
+	httpRouter := router.NewRouter(productHandler, middleware)
 	httpMux := httpRouter.SetupRoutes()
 
 	grpcServer := grpc.NewServer()
@@ -71,7 +95,7 @@ func main() {
 
 	go func() {
 		httpAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
-		log.Printf("Starting HTTP server on %s", httpAddr)
+		telemetry.Logger.Info(fmt.Sprintf("Starting HTTP server on %s", httpAddr))
 		if err := http.ListenAndServe(httpAddr, httpMux); err != nil {
 			log.Fatalf("HTTP server failed: %v", err)
 		}
@@ -83,7 +107,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("Failed to listen on %s: %v", grpcAddr, err)
 		}
-		log.Printf("Starting gRPC server on %s", grpcAddr)
+		telemetry.Logger.Info(fmt.Sprintf("Starting gRPC server on %s", grpcAddr))
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("gRPC server failed: %v", err)
 		}
@@ -93,7 +117,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down servers...")
+	telemetry.Logger.Info("Shutting down servers...")
 	grpcServer.GracefulStop()
-	log.Println("Servers stopped")
+	telemetry.Logger.Info("Servers stopped")
 }
