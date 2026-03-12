@@ -97,35 +97,11 @@ services:
       - loki
       - tempo
 
-  postgres:
-    image: postgres:15-alpine
-    container_name: postgres
-    environment:
-      POSTGRES_USER: vave
-      POSTGRES_PASSWORD: vave123
-      POSTGRES_DB: vavedb
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
-    ports:
-      - "5432:5432"
-    networks:
-      - observability
-
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - observability
-
 volumes:
   prometheus_data:
   loki_data:
   tempo_data:
   grafana_data:
-  postgres_data:
 
 networks:
   observability:
