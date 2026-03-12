@@ -385,7 +385,9 @@
           ],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -395,15 +397,6 @@
       },
       "pluginVersion": "12.3.0",
       "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) * 1000",
-          "legendFormat": "p95 - {{method}} {{path}}",
-          "refId": "A"
-        },
         {
           "datasource": {
             "type": "prometheus",
@@ -645,7 +638,9 @@
           ],
           "displayMode": "table",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": true,
+          "sortBy": "Max",
+          "sortDesc": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -655,15 +650,6 @@
       },
       "pluginVersion": "12.3.0",
       "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "histogram_quantile(0.95, rate(db_call_duration_seconds_bucket[30s])) * 1000",
-          "legendFormat": "p95 - {{operation}}",
-          "refId": "A"
-        },
         {
           "datasource": {
             "type": "prometheus",
@@ -959,15 +945,6 @@
       },
       "pluginVersion": "12.3.0",
       "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "histogram_quantile(0.95, rate(redis_operation_duration_seconds_bucket[30s])) * 1000",
-          "legendFormat": "p95 - {{operation}}",
-          "refId": "A"
-        },
         {
           "datasource": {
             "type": "prometheus",
@@ -1429,5 +1406,5 @@
   "timezone": "",
   "title": "Vave Tool API Overview",
   "uid": "vave-tool-api",
-  "version": 22
+  "version": 23
 }
