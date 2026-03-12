@@ -85,7 +85,7 @@ func main() {
 		log.Fatalf("Failed to create middleware: %v", err)
 	}
 
-	httpRouter := router.NewRouter(productHandler, middleware)
+	httpRouter := router.NewRouter(productHandler, middleware, telemetry.MetricsHandler)
 	httpMux := httpRouter.SetupRoutes()
 
 	grpcServer := grpc.NewServer()

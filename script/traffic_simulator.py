@@ -22,11 +22,22 @@ class TrafficSimulator:
         self.results = defaultdict(int)
         self.start_time = None
         self.end_time = None
+        # Create session for connection pooling to reduce connection overhead
+        self.session = requests.Session()
+        # Pre-warm connection pool
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=min(qps, 200),
+            pool_maxsize=min(qps, 200),
+            max_retries=0
+        )
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
         
     def make_request(self):
         """Make a single HTTP request and return the result."""
         try:
-            response = requests.get(self.url, timeout=self.timeout)
+            # Use session for connection reuse, measures only actual request/response time
+            response = self.session.get(self.url, timeout=self.timeout)
             return {
                 'status': response.status_code,
                 'success': response.status_code == 200,
@@ -72,7 +83,13 @@ class TrafficSimulator:
         status_codes = defaultdict(int)
         
         # Use thread pool for concurrent requests
-        with ThreadPoolExecutor(max_workers=min(self.qps, 100)) as executor:
+        # Calculate workers based on QPS and expected latency to prevent queuing
+        # Assuming average latency of 100ms, we need QPS * 0.1 workers minimum
+        # Adding 50% buffer and capping at reasonable maximum
+        min_workers = max(10, int(self.qps * 0.15))
+        max_workers_limit = min(min_workers, 2000)
+        
+        with ThreadPoolExecutor(max_workers=max_workers_limit) as executor:
             futures = []
             
             for i in range(total_requests):
@@ -107,6 +124,9 @@ class TrafficSimulator:
                 # Update progress every 10 requests or at the end
                 if completed % 10 == 0 or completed == len(futures):
                     self.print_progress(completed, len(futures), success_count, failed_count)
+        
+        # Close session
+        self.session.close()
         
         self.end_time = time.time()
         actual_duration = self.end_time - self.start_time

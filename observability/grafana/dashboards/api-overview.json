@@ -68,12 +68,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[1m]))",
+          "expr": "sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s]))",
           "legendFormat": "Total",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[1m])) by (method, path)",
+          "expr": "sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) by (method, path)",
           "legendFormat": "{{method}} {{path}}",
           "refId": "B"
         }
@@ -141,12 +141,12 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{path!~\"/metrics|/swagger.*|/favicon.*\"}[5m])) * 1000",
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) * 1000",
           "legendFormat": "p95 - {{method}} {{path}}",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{path!~\"/metrics|/swagger.*|/favicon.*\"}[5m])) * 1000",
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) * 1000",
           "legendFormat": "p99 - {{method}} {{path}}",
           "refId": "B"
         }
@@ -201,7 +201,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total{status_code=~\"2..\",path!~\"/metrics|/swagger.*|/favicon.*\"}[5m])) / sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[5m]))",
+          "expr": "sum(rate(http_requests_total{status_code=~\"2..\",path!~\"/metrics|/swagger.*|/favicon.*\"}[30s])) / sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[30s]))",
           "refId": "A"
         }
       ],

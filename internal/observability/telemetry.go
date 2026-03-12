@@ -3,11 +3,14 @@ package observability
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/exporters/prometheus"
+	promexporter "go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -22,6 +25,7 @@ import (
 type Telemetry struct {
 	TracerProvider *sdktrace.TracerProvider
 	MeterProvider  *metric.MeterProvider
+	MetricsHandler http.Handler
 	Logger         *zap.Logger
 }
 
@@ -51,7 +55,7 @@ func InitTelemetry(serviceName, serviceVersion, otelEndpoint string) (*Telemetry
 	logger := initLogger(serviceName)
 
 	otel.SetTracerProvider(tracerProvider)
-	otel.SetMeterProvider(meterProvider)
+	otel.SetMeterProvider(meterProvider.Provider)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
 		propagation.Baggage{},
@@ -59,7 +63,8 @@ func InitTelemetry(serviceName, serviceVersion, otelEndpoint string) (*Telemetry
 
 	return &Telemetry{
 		TracerProvider: tracerProvider,
-		MeterProvider:  meterProvider,
+		MeterProvider:  meterProvider.Provider,
+		MetricsHandler: meterProvider.Handler,
 		Logger:         logger,
 	}, nil
 }
@@ -87,8 +92,15 @@ func initTracer(ctx context.Context, res *resource.Resource, endpoint string) (*
 	return tracerProvider, nil
 }
 
-func initMetrics(res *resource.Resource) (*metric.MeterProvider, error) {
-	exporter, err := prometheus.New()
+func initMetrics(res *resource.Resource) (*struct {
+	Provider *metric.MeterProvider
+	Handler  http.Handler
+}, error) {
+	registry := prometheus.NewRegistry()
+
+	exporter, err := promexporter.New(
+		promexporter.WithRegisterer(registry),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create prometheus exporter: %w", err)
 	}
@@ -110,7 +122,15 @@ func initMetrics(res *resource.Resource) (*metric.MeterProvider, error) {
 		metric.WithView(histogramView),
 	)
 
-	return meterProvider, nil
+	handler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
+
+	return &struct {
+		Provider *metric.MeterProvider
+		Handler  http.Handler
+	}{
+		Provider: meterProvider,
+		Handler:  handler,
+	}, nil
 }
 
 func initLogger(serviceName string) *zap.Logger {
