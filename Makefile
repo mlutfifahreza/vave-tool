@@ -18,8 +18,8 @@ test:
 	go test -v ./...
 
 proto:
-	protoc --go_out=. --go_opt=module=github.com/vave-tool/backend \
-		--go-grpc_out=. --go-grpc_opt=module=github.com/vave-tool/backend \
+	protoc --go_out=. --go_opt=module=github.com/vave-tool \
+		--go-grpc_out=. --go-grpc_opt=module=github.com/vave-tool \
 		proto/product.proto
 
 swagger:

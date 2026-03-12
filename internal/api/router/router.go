@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	httpSwagger "github.com/swaggo/http-swagger"
-	"github.com/vave-tool/backend/internal/api/handler"
+	"github.com/vave-tool/internal/api/handler"
 )
 
 type Router struct {

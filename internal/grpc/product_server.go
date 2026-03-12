@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 
-	"github.com/vave-tool/backend/internal/domain"
-	"github.com/vave-tool/backend/proto"
+	"github.com/vave-tool/internal/domain"
+	"github.com/vave-tool/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
-	"github.com/vave-tool/backend/internal/config"
+	"github.com/vave-tool/internal/config"
 )
 
 func NewPostgresConnection(cfg config.DatabaseConfig) (*sql.DB, error) {

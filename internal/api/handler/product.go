@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/vave-tool/backend/internal/api/response"
-	"github.com/vave-tool/backend/internal/domain"
+	"github.com/vave-tool/internal/api/response"
+	"github.com/vave-tool/internal/domain"
 )
 
 type ProductHandler struct {

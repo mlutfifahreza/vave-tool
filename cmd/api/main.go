@@ -12,15 +12,15 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	_ "github.com/vave-tool/backend/docs"
-	"github.com/vave-tool/backend/internal/api/handler"
-	"github.com/vave-tool/backend/internal/api/router"
-	"github.com/vave-tool/backend/internal/config"
-	grpcHandler "github.com/vave-tool/backend/internal/grpc"
-	"github.com/vave-tool/backend/internal/pkg/db"
-	"github.com/vave-tool/backend/internal/repository"
-	"github.com/vave-tool/backend/internal/service"
-	"github.com/vave-tool/backend/proto"
+	_ "github.com/vave-tool/docs"
+	"github.com/vave-tool/internal/api/handler"
+	"github.com/vave-tool/internal/api/router"
+	"github.com/vave-tool/internal/config"
+	grpcHandler "github.com/vave-tool/internal/grpc"
+	"github.com/vave-tool/internal/pkg/db"
+	"github.com/vave-tool/internal/repository"
+	"github.com/vave-tool/internal/service"
+	"github.com/vave-tool/proto"
 )
 
 // @title Vave Tool API

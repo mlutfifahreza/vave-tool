@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/vave-tool/backend/internal/domain"
+	"github.com/vave-tool/internal/domain"
 )
 
 type productRepository struct {

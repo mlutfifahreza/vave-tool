@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
-	"github.com/vave-tool/backend/internal/constants"
-	"github.com/vave-tool/backend/internal/domain"
+	"github.com/vave-tool/internal/constants"
+	"github.com/vave-tool/internal/domain"
 )
 
 type productService struct {
