@@ -137,11 +137,15 @@ Each span includes:
 
 **Viewing traces in Grafana**:
 
-1. **Using Trace IDs from Logs** (Recommended):
+1. **Using Trace IDs from Logs** (Manual copy):
    - Go to Explore → Select **Loki**
    - Query: `{service_name="vave-tool-api"}`
-   - Find a log entry and click on its `trace_id` value
-   - Grafana will automatically jump to the trace in Tempo
+   - Find a log entry and **copy** the `trace_id` value from the log content  
+   - Go to Explore → Select **Tempo**
+   - Select **"TraceQL"** from the query type dropdown
+   - Enter the trace ID and click "Run query"
+   
+   **Note**: Clickable trace_id links are configured but may encounter "empty ring" errors due to Tempo running in single-instance mode. Direct TraceQL lookup is the recommended method.
 
 2. **Direct Trace Lookup**:
    - Go to Explore → Select **Tempo**
@@ -149,7 +153,7 @@ Each span includes:
    - Paste a trace ID (get from logs or run `./script/test_tempo.sh`)  
    - Click "Run query"
    
-   ⚠️ **Common Error**: If you see "error querying live-stores: empty ring", you're using the wrong query mode. Make sure you selected "TraceQL" from the dropdown in the top-left, not "Search". The Search tab doesn't work in single-instance mode.
+   ⚠️ **Common Error**: If you see "error querying live-stores: empty ring", you're either using the wrong query mode or the trace hasn't been flushed to storage yet. Make sure you selected "TraceQL" from the dropdown in the top-left, not "Search". Wait a few seconds for traces to be written to storage.
 
 3. **View Trace Spans**:
    - Each trace shows the complete request flow:
@@ -339,19 +343,28 @@ Ensure the application is configured to send traces to the correct endpoint:
 
 ### "Empty ring" error in Tempo
 
-**Error message**: `error querying live-stores in Querier.SearchTagValues: error finding partition ring replicas: empty ring`
+**Error message**: `error querying live-stores in Querier.FindTraceByID: error finding partition ring replicas: empty ring`
 
-**Cause**: You're trying to use Tempo's "Search" feature, which requires distributed mode. This setup runs Tempo in single-instance mode.
+**Cause**: This error occurs when Tempo tries to query ingesters (live data) in single-instance mode. The current setup runs Tempo in local/dev mode without a distributed ring infrastructure.
 
-**Solution**: Use direct trace ID lookup with TraceQL instead:
-1. In Grafana → Explore → Tempo, select **"TraceQL"** from the query type dropdown (NOT "Search")
-2. Get a trace ID from:
-   - Application logs (look for `trace_id` field)
-   - Loki logs (click trace links)
-   - Run `./script/test_tempo.sh`
-3. Paste the trace ID and click "Run query"
+**Solutions**:
 
-**Note**: This doesn't affect trace storage or viewing by ID. All traces are stored and fully functional when accessed directly by trace ID.
+1. **Wait for trace flush**: Traces may not be immediately queryable. Wait 5-10 seconds after generating a request, then query again.
+
+2. **Use TraceQL for direct lookupup** (Recommended):
+   - In Grafana → Explore → Tempo, select **"TraceQL"** from the query type dropdown (NOT "Search")
+   - Get a trace ID from:
+     - Application logs (look for `trace_id` field)
+     - Loki logs (copy the trace_id value from log content)
+     - Run `./script/test_tempo.sh`
+   - Enter the trace ID in the query field
+   - Click "Run query"
+
+3. **Clickable links from Loki**: While configured, trace_id links from Loki logs may encounter this error. Use manual copy-paste method instead.
+
+**Why this happens**: In single-instance mode, Tempo doesn't maintain a memberlist ring for coordinating distributed queries. Direct trace ID lookups via TraceQL work reliably, but some query paths (like the API endpoint used by derived field links) attempt ingester queries that require ring coordination.
+
+**Note**: This doesn't affect trace storage or viewing by ID. All traces are stored and fully functional when accessed directly via TraceQL.
 
 ## Learn More
 

@@ -34,16 +34,17 @@ services:
     image: grafana/tempo:latest
     container_name: tempo
     user: root
-    command: ["-config.file=/etc/tempo/tempo.yml"]
+    command: ["-target=all", "-config.file=/etc/tempo/tempo.yml", "-config.expand-env=true"]
+    environment:
+      - GOMAXPROCS=2
     volumes:
       - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml
+      - ./observability/tempo/overrides.yml:/tmp/tempo/overrides.yml
       - tempo_data:/tmp/tempo
     ports:
       - "3200:3200"
       - "4317:4317"
       - "4318:4318"
-      - "7946:7946"
-      - "9095:9095"
     networks:
       - observability
 

@@ -40,11 +40,17 @@ datasources:
         spanEndTimeShift: '1h'
         filterByTraceID: true
         filterBySpanID: false
+      tracesToMetrics:
+        datasourceUid: prometheus
       serviceMap:
         datasourceUid: prometheus
       nodeGraph:
         enabled: true
       search:
-        hide: false
+        hide: true
+      traceQuery:
+        timeShiftEnabled: true
+        spanStartTimeShift: '1h'
+        spanEndTimeShift: '-1h'
       lokiSearch:
         datasourceUid: loki

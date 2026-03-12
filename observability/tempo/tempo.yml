@@ -2,6 +2,14 @@ server:
   http_listen_port: 3200
   log_level: info
 
+query_frontend:
+  search:
+    duration_slo: 5s
+    throughput_bytes_slo: 10000000
+  trace_by_id:
+    duration_slo: 5s
+    query_shards: 2
+
 distributor:
   receivers:
     otlp:
@@ -10,9 +18,42 @@ distributor:
           endpoint: 0.0.0.0:4317
         http:
           endpoint: 0.0.0.0:4318
+  ring:
+    kvstore:
+      store: inmemory
 
 ingester:
   max_block_duration: 5m
+  complete_block_timeout: 10s
+  flush_check_period: 10s
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    tokens_file_path: /tmp/tempo/tokens.json
+    final_sleep: 0s
+    num_tokens: 128
+    heartbeat_period: 5s
+    join_after: 0s
+
+querier:
+  frontend_worker:
+    frontend_address: localhost:9095
+  max_concurrent_queries: 5
+
+metrics_generator:
+  ring:
+    kvstore:
+      store: inmemory
+
+overrides:
+  per_tenant_override_config: /tmp/tempo/overrides.yml
+  per_tenant_override_period: 10s
+  defaults:
+    metrics_generator:
+      processors: []
 
 storage:
   trace:
@@ -21,3 +62,6 @@ storage:
       path: /tmp/tempo/wal
     local:
       path: /tmp/tempo/blocks
+    pool:
+      max_workers: 100
+      queue_depth: 10000
