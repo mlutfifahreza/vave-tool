@@ -47,28 +47,6 @@ migrate-down:
 		psql -h localhost -U postgres -d vave_db -f $$file; \
 	done
 
-seed-products:
-	@echo "Inserting dummy products..."
-	@psql -h localhost -U postgres -d vave_db -c "\
-		INSERT INTO products (name, description, price, stock_quantity, category, sku, is_active) VALUES \
-		('Laptop Pro 15', 'High-performance laptop with 16GB RAM and 512GB SSD', 1299.99, 25, 'Electronics', 'LAP-PRO-15', true), \
-		('Wireless Mouse', 'Ergonomic wireless mouse with USB receiver', 29.99, 150, 'Electronics', 'MOUSE-WL-01', true), \
-		('Office Chair', 'Adjustable ergonomic office chair with lumbar support', 349.50, 45, 'Furniture', 'CHAIR-OFF-01', true), \
-		('Coffee Maker', 'Programmable 12-cup coffee maker with timer', 89.99, 60, 'Appliances', 'COFFEE-12C', true), \
-		('Notebook Set', 'Set of 3 ruled notebooks, 200 pages each', 12.99, 200, 'Stationery', 'NOTE-SET-3', true), \
-		('USB-C Cable', '2-meter USB-C to USB-C charging cable', 19.99, 300, 'Electronics', 'CABLE-USBC-2M', true), \
-		('Desk Lamp', 'LED desk lamp with adjustable brightness', 45.00, 80, 'Furniture', 'LAMP-LED-ADJ', true), \
-		('Water Bottle', 'Stainless steel insulated water bottle, 24oz', 24.99, 120, 'Accessories', 'BOTTLE-SS-24', true), \
-		('Bluetooth Speaker', 'Portable Bluetooth speaker with 10-hour battery', 79.99, 55, 'Electronics', 'SPEAK-BT-10H', true), \
-		('Standing Desk', 'Electric height-adjustable standing desk', 599.00, 15, 'Furniture', 'DESK-STAND-EL', true) \
-		ON CONFLICT (sku) DO NOTHING;"
-	@echo "Dummy products inserted successfully!"
-
-seed-products-py:
-	@echo "Seeding products using Python script..."
-	@python3 script/seed_products.py $(COUNT)
-	@echo "✓ Seeding complete!"
-
 deps:
 	go mod download
 	go mod tidy
@@ -110,6 +88,3 @@ build:
 	@echo "Building application..."
 	go build -o bin/api cmd/api/main.go
 	@echo "✓ Build complete: bin/api"
-
-# Traffic simulation with configurable duration and QPS
-# Usage: make traffic DURATION=60 
