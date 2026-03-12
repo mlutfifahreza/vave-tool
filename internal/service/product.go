@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"go.opentelemetry.io/otel/attribute"
+	"go.uber.org/zap"
+
 	"github.com/vave-tool/internal/constants"
 	"github.com/vave-tool/internal/domain"
 	"github.com/vave-tool/internal/observability"
-	"go.opentelemetry.io/otel/attribute"
-	"go.uber.org/zap"
 )
 
 type productService struct {
@@ -42,37 +43,18 @@ func (s *productService) ListProducts(ctx context.Context, params domain.Paginat
 		return nil, err
 	}
 
-	totalCount, err := s.repo.Count(ctx)
-	if err != nil {
-		observability.RecordError(span, err, "Failed to count products")
-		return nil, err
-	}
-
-	totalPages := int(totalCount) / params.Size
-	if int(totalCount)%params.Size > 0 {
-		totalPages++
-	}
-
 	span.SetAttributes(
 		attribute.Int("product_count", len(products)),
-		attribute.Int64("total_count", totalCount),
 		attribute.Int("page", params.Page),
 		attribute.Int("size", params.Size),
 	)
 	s.logger.Debug(ctx, "Products fetched from repository",
 		zap.Int("count", len(products)),
-		zap.Int64("total", totalCount),
 		zap.Int("page", params.Page),
 	)
 
 	return &domain.PaginatedProducts{
 		Products: products,
-		Pagination: domain.PaginationMetadata{
-			Page:       params.Page,
-			Size:       params.Size,
-			TotalItems: totalCount,
-			TotalPages: totalPages,
-		},
 	}, nil
 }
 

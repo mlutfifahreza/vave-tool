@@ -23,16 +23,8 @@ type PaginationParams struct {
 	Size int `json:"size"`
 }
 
-type PaginationMetadata struct {
-	Page       int   `json:"page"`
-	Size       int   `json:"size"`
-	TotalItems int64 `json:"total_items"`
-	TotalPages int   `json:"total_pages"`
-}
-
 type PaginatedProducts struct {
-	Products   []*Product         `json:"products"`
-	Pagination PaginationMetadata `json:"pagination"`
+	Products []*Product `json:"products"`
 }
 
 type ProductRepository interface {

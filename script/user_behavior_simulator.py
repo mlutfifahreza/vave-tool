@@ -82,11 +82,13 @@ class UserBehaviorSimulator:
             flow_start = time.time()
             flow_success = True
             
-            # Step 1: Get list of products
+            # Step 1: Get list of products with random pagination
+            random_page = random.randint(1, 5)
+            random_size = random.randint(5, 20)
             list_result = self.make_request(
                 'GET',
-                f'{self.base_url}/api/products',
-                'List Products'
+                f'{self.base_url}/api/products?page={random_page}&size={random_size}',
+                f'List Products (page={random_page}, size={random_size})'
             )
             
             with self.stats_lock:
@@ -104,7 +106,8 @@ class UserBehaviorSimulator:
             # Step 2: Extract product IDs and view individual products
             product_ids = []
             if list_result['success'] and list_result['data']:
-                products = list_result['data'].get('data', [])
+                data = list_result['data'].get('data', {})
+                products = data.get('products', []) if isinstance(data, dict) else []
                 if isinstance(products, list) and len(products) > 0:
                     # Get up to 5 random products
                     sample_size = min(5, len(products))
@@ -202,7 +205,7 @@ class UserBehaviorSimulator:
         print(f"   Think Time:        {self.think_time_min}s - {self.think_time_max}s")
         print(f"   Started:           {datetime.now().strftime('%H:%M:%S')}")
         print()
-        print("📋 User Flow:")
+        print("📋 User Flow: (random page 1-5, size 5-20)") 
         print("   1. Get list of products")
         print("   2. View 5 random products from the list")
         print("   3. Repeat until duration expires")

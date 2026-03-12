@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"go.uber.org/zap"
+
 	"github.com/vave-tool/internal/api/response"
 	"github.com/vave-tool/internal/domain"
 	"github.com/vave-tool/internal/observability"
-	"go.uber.org/zap"
 )
 
 type ProductHandler struct {
@@ -80,7 +81,6 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info(ctx, "Products fetched successfully",
 		zap.Int("count", len(result.Products)),
-		zap.Int64("total", result.Pagination.TotalItems),
 	)
 	response.Success(w, result)
 }
