@@ -93,9 +93,21 @@ func initMetrics(res *resource.Resource) (*metric.MeterProvider, error) {
 		return nil, fmt.Errorf("failed to create prometheus exporter: %w", err)
 	}
 
+	histogramView := metric.NewView(
+		metric.Instrument{Name: "http_request_duration_seconds"},
+		metric.Stream{
+			Aggregation: metric.AggregationExplicitBucketHistogram{
+				Boundaries: []float64{
+					0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0,
+				},
+			},
+		},
+	)
+
 	meterProvider := metric.NewMeterProvider(
 		metric.WithResource(res),
 		metric.WithReader(exporter),
+		metric.WithView(histogramView),
 	)
 
 	return meterProvider, nil
