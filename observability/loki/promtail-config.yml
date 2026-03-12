@@ -50,12 +50,25 @@ scrape_configs:
           expressions:
             level: level
             msg: msg
-            timestamp: ts
+            timestamp: timestamp
             trace_id: trace_id
+            method: method
+            path: path
+            status_code: status_code
+            duration_seconds: duration_seconds
       - labels:
           level:
+      - structured_metadata:
+          trace_id:
+          method:
+          path:
+          status_code:
+          duration_seconds:
       - timestamp:
           source: timestamp
-          format: RFC3339Nano
+          format: RFC3339
+      - template:
+          source: output
+          template: '{{ .msg }} trace_id={{ .trace_id }}'
       - output:
-          source: msg
+          source: output

@@ -145,9 +145,11 @@ Each span includes:
 
 2. **Direct Trace Lookup**:
    - Go to Explore → Select **Tempo**
-   - Select "TraceQL" query type
+   - **IMPORTANT**: In the query builder dropdown, select **"TraceQL"** (NOT "Search")
    - Paste a trace ID (get from logs or run `./script/test_tempo.sh`)  
    - Click "Run query"
+   
+   ⚠️ **Common Error**: If you see "error querying live-stores: empty ring", you're using the wrong query mode. Make sure you selected "TraceQL" from the dropdown in the top-left, not "Search". The Search tab doesn't work in single-instance mode.
 
 3. **View Trace Spans**:
    - Each trace shows the complete request flow:
@@ -155,8 +157,6 @@ Each span includes:
      - `ProductService.GetProduct` → Service layer span
      - `Repository.GetProductByID` → Database layer span
      - Redis cache operations spans
-
-**Note**: The Tempo search API (browsing all traces by service name) requires distributed mode configuration. In this single-instance setup, use trace IDs from logs to view specific traces. All traces are stored and fully functional in Grafana when accessed by ID.
 
 ## Correlation IDs - The Magic Connection
 
@@ -337,11 +337,21 @@ Ensure the application is configured to send traces to the correct endpoint:
 ./script/test_tempo.sh
 ```
 
-**Note on Tempo Search**: The Tempo search/browse API showing "empty ring" error is expected in single-instance mode. This doesn't affect trace storage or viewing. To view traces:
-1. Get trace IDs from application logs (they contain `trace_id` field)
-2. Or click trace links in Loki logs
-3. Or run `./script/test_tempo.sh` to get a recent trace ID
-4. Paste the trace ID in Grafana → Explore → Tempo
+### "Empty ring" error in Tempo
+
+**Error message**: `error querying live-stores in Querier.SearchTagValues: error finding partition ring replicas: empty ring`
+
+**Cause**: You're trying to use Tempo's "Search" feature, which requires distributed mode. This setup runs Tempo in single-instance mode.
+
+**Solution**: Use direct trace ID lookup with TraceQL instead:
+1. In Grafana → Explore → Tempo, select **"TraceQL"** from the query type dropdown (NOT "Search")
+2. Get a trace ID from:
+   - Application logs (look for `trace_id` field)
+   - Loki logs (click trace links)
+   - Run `./script/test_tempo.sh`
+3. Paste the trace ID and click "Run query"
+
+**Note**: This doesn't affect trace storage or viewing by ID. All traces are stored and fully functional when accessed directly by trace ID.
 
 ## Learn More
 
