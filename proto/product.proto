@@ -27,7 +27,10 @@ message Product {
   google.protobuf.Timestamp updated_at = 10;
 }
 
-message ListProductsRequest {}
+message ListProductsRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
 
 message ListProductsResponse {
   repeated Product products = 1;

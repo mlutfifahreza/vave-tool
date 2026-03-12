@@ -22,13 +22,28 @@ func NewProductServer(service domain.ProductService) *ProductServer {
 }
 
 func (s *ProductServer) ListProducts(ctx context.Context, req *proto.ListProductsRequest) (*proto.ListProductsResponse, error) {
-	products, err := s.service.ListProducts(ctx)
+	page := int(req.Page)
+	if page <= 0 {
+		page = 1
+	}
+
+	size := int(req.Size)
+	if size <= 0 {
+		size = 100
+	}
+
+	paginationParams := domain.PaginationParams{
+		Page: page,
+		Size: size,
+	}
+
+	result, err := s.service.ListProducts(ctx, paginationParams)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to fetch products: %v", err)
 	}
 
-	pbProducts := make([]*proto.Product, 0, len(products))
-	for _, p := range products {
+	pbProducts := make([]*proto.Product, 0, len(result.Products))
+	for _, p := range result.Products {
 		pbProducts = append(pbProducts, toPBProduct(p))
 	}
 
