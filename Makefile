@@ -100,3 +100,6 @@ build:
 	@echo "Building application..."
 	go build -o bin/api cmd/api/main.go
 	@echo "✓ Build complete: bin/api"
+
+# Traffic simulation with configurable duration and QPS
+# Usage: make traffic DURATION=60 

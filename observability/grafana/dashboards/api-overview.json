@@ -68,9 +68,14 @@
       },
       "targets": [
         {
-          "expr": "rate(http_requests_total[5m])",
-          "legendFormat": "{{method}} {{path}}",
+          "expr": "sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[1m]))",
+          "legendFormat": "Total",
           "refId": "A"
+        },
+        {
+          "expr": "sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[1m])) by (method, path)",
+          "legendFormat": "{{method}} {{path}}",
+          "refId": "B"
         }
       ],
       "title": "Request Rate",
@@ -114,7 +119,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "ms"
         }
       },
       "gridPos": {
@@ -136,12 +141,12 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{path!~\"/metrics|/swagger.*|/favicon.*\"}[5m])) * 1000",
           "legendFormat": "p95 - {{method}} {{path}}",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{path!~\"/metrics|/swagger.*|/favicon.*\"}[5m])) * 1000",
           "legendFormat": "p99 - {{method}} {{path}}",
           "refId": "B"
         }
@@ -196,7 +201,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total{status_code=~\"2..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+          "expr": "sum(rate(http_requests_total{status_code=~\"2..\",path!~\"/metrics|/swagger.*|/favicon.*\"}[5m])) / sum(rate(http_requests_total{path!~\"/metrics|/swagger.*|/favicon.*\"}[5m]))",
           "refId": "A"
         }
       ],

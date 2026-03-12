@@ -9,8 +9,8 @@ echo "📊 Step 1: Starting observability services (Prometheus, Loki, Tempo, Gra
 docker-compose up -d
 
 echo ""
-echo "⏳ Waiting for services to be ready (30 seconds)..."
-sleep 30
+echo "⏳ Waiting for services to be ready (5 seconds)..."
+sleep 5
 
 echo ""
 echo "✅ Observability stack is running!"

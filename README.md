@@ -38,6 +38,66 @@ make run
 # Open http://localhost:8080/swagger/index.html in your browser
 ```
 
+## 🚀 Traffic Simulator
+
+Generate HTTP traffic for load testing and observability validation.
+
+**Requirements:**
+```bash
+pip install requests
+```
+
+**Basic Usage:**
+```bash
+# Default: 30 seconds, 5 QPS
+python3 script/traffic_simulator.py
+
+# Custom duration and QPS
+python3 script/traffic_simulator.py --duration 60 --qps 100
+
+# Short flags
+python3 script/traffic_simulator.py -d 120 -q 50
+
+# Custom endpoint
+python3 script/traffic_simulator.py -d 30 -q 10 --url http://localhost:8080/api/products/1
+```
+
+**Features:**
+- ✅ Configurable duration and QPS
+- ✅ Real-time progress visualization
+- ✅ Concurrent request execution
+- ✅ Detailed latency statistics (min, max, mean, median, P95, P99)
+- ✅ Status code distribution
+- ✅ Success rate calculation
+- ✅ Adjustable request timeout
+
+**Example Output:**
+```
+🚀 Starting traffic simulation...
+   Duration: 30 seconds
+   QPS:      100 requests/second
+   Target:   http://localhost:8080/api/products
+   Started:  16:00:19
+
+[██████████████████████████████████████████████████] 3000/3000 | ✓ 2995 | ✗ 5 | Success: 99.8%
+
+📊 Traffic Simulation Complete!
+   Total Requests:    3000
+   Successful:        2995
+   Failed:            5
+   Success Rate:      99.83%
+   Actual Duration:   30.12s
+   Actual QPS:        99.60
+
+📈 Latency Statistics:
+   Min:     12.34ms
+   Max:     456.78ms
+   Mean:    45.67ms
+   Median:  42.12ms
+   P95:     89.23ms
+   P99:     123.45ms
+```
+
 ## Project Structure
 
 ```

@@ -174,11 +174,14 @@ make obs-down
 ## 🎯 Testing the Implementation
 
 ```bash
-# Generate traffic
-for i in {1..10}; do
-  curl http://localhost:8080/api/products
-  sleep 0.5
-done
+# Generate traffic with Python script
+python3 script/traffic_simulator.py --duration 30 --qps 10
+
+# Or use short flags
+python3 script/traffic_simulator.py -d 60 -q 100
+
+# Custom endpoint
+python3 script/traffic_simulator.py -d 30 -q 50 --url http://localhost:8080/api/products/1
 
 # View metrics
 curl http://localhost:8080/metrics
