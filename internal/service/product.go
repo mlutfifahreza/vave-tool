@@ -35,7 +35,33 @@ func (s *productService) ListProducts(ctx context.Context, params domain.Paginat
 	ctx, span := observability.StartSpan(ctx, "ProductService.ListProducts")
 	defer span.End()
 
-	s.logger.Debug(ctx, "Fetching products from repository", zap.Int("page", params.Page), zap.Int("size", params.Size))
+	cacheKey := fmt.Sprintf("products:list:page:%d:size:%d", params.Page, params.Size)
+
+	s.logger.Debug(ctx, "Checking cache for product list", zap.Int("page", params.Page), zap.Int("size", params.Size))
+	redisStart := time.Now()
+	cached, err := s.redisClient.Get(ctx, cacheKey).Result()
+	if s.metrics != nil {
+		s.metrics.RecordRedisOp(ctx, "get", time.Since(redisStart), err)
+	}
+	if err == nil {
+		var products []*domain.Product
+		if err := json.Unmarshal([]byte(cached), &products); err == nil {
+			span.SetAttributes(attribute.Bool("cache_hit", true))
+			if s.metrics != nil {
+				s.metrics.RecordCacheAccess(ctx, "list_products", true)
+			}
+			s.logger.Debug(ctx, "Product list found in cache", zap.Int("count", len(products)))
+			return &domain.PaginatedProducts{
+				Products: products,
+			}, nil
+		}
+	}
+
+	span.SetAttributes(attribute.Bool("cache_hit", false))
+	if s.metrics != nil {
+		s.metrics.RecordCacheAccess(ctx, "list_products", false)
+	}
+	s.logger.Debug(ctx, "Product list not in cache, fetching from repository", zap.Int("page", params.Page), zap.Int("size", params.Size))
 
 	products, err := s.repo.List(ctx, params)
 	if err != nil {
@@ -52,6 +78,15 @@ func (s *productService) ListProducts(ctx context.Context, params domain.Paginat
 		zap.Int("count", len(products)),
 		zap.Int("page", params.Page),
 	)
+
+	if productsJSON, err := json.Marshal(products); err == nil {
+		redisStart := time.Now()
+		setErr := s.redisClient.Set(ctx, cacheKey, productsJSON, 30*time.Second).Err()
+		if s.metrics != nil {
+			s.metrics.RecordRedisOp(ctx, "set", time.Since(redisStart), setErr)
+		}
+		s.logger.Debug(ctx, "Product list cached", zap.Int("count", len(products)))
+	}
 
 	return &domain.PaginatedProducts{
 		Products: products,
