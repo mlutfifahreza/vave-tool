@@ -11,6 +11,7 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	GRPC     GRPCConfig
+	Auth     AuthConfig
 	LogLevel string
 }
 
@@ -53,6 +54,11 @@ type GRPCConfig struct {
 	Host string
 }
 
+type AuthConfig struct {
+	InternalUsername string
+	InternalPassword string
+}
+
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -89,6 +95,10 @@ func Load() *Config {
 		GRPC: GRPCConfig{
 			Port: getEnv("GRPC_PORT", "50051"),
 			Host: getEnv("GRPC_HOST", "0.0.0.0"),
+		},
+		Auth: AuthConfig{
+			InternalUsername: getEnv("INTERNAL_AUTH_USERNAME", "admin"),
+			InternalPassword: getEnv("INTERNAL_AUTH_PASSWORD", "admin"),
 		},
 		LogLevel: getEnv("LOG_LEVEL", "info"),
 	}

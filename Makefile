@@ -1,4 +1,4 @@
-.PHONY: help build run test proto migrate-up migrate-down seed-products seed-products-py swagger obs-up obs-down obs-logs obs-restart test-tempo
+.PHONY: help build run test proto migrate-up migrate-down seed-products seed-products-py seed-client swagger obs-up obs-down obs-logs obs-restart test-tempo
 
 help:
 	@echo "Available commands:"
@@ -11,6 +11,7 @@ help:
 	@echo "  make migrate-down - Run database migrations down"
 	@echo "  make seed-products - Insert 10 dummy products (dev only)"
 	@echo "  make seed-products-py COUNT=X - Insert X products using Python batch insert"
+	@echo "  make seed-client - Create/update admin client for internal API authentication"
 	@echo ""
 	@echo "Observability commands:"
 	@echo "  make obs-up      - Start observability stack (Prometheus, Loki, Tempo, Grafana)"
@@ -46,6 +47,11 @@ migrate-down:
 		echo "Applying $$file"; \
 		psql -h localhost -U postgres -d vave_db -f $$file; \
 	done
+
+seed-client:
+	@echo "Creating/updating admin client..."
+	@go run script/seed_client.go
+	@echo "✓ Client seeded successfully"
 
 deps:
 	go mod download

@@ -99,6 +99,7 @@ func main() {
 	telemetry.Logger.Info("Redis connection established")
 
 	productRepo := repository.NewProductRepository(database)
+	clientRepo := repository.NewClientRepository(database)
 	productService := service.NewProductService(productRepo, redisClient, obsLogger)
 	productHandler := handler.NewProductHandler(productService, obsLogger)
 
@@ -107,7 +108,7 @@ func main() {
 		log.Fatalf("Failed to create middleware: %v", err)
 	}
 
-	httpRouter := router.NewRouter(productHandler, middleware, telemetry.MetricsHandler)
+	httpRouter := router.NewRouter(productHandler, middleware, telemetry.MetricsHandler, clientRepo)
 	httpMux := httpRouter.SetupRoutes()
 
 	grpcServer := grpc.NewServer()

@@ -14,6 +14,7 @@ type Product struct {
 	Category      *string   `json:"category,omitempty" db:"category"`
 	SKU           *string   `json:"sku,omitempty" db:"sku"`
 	IsActive      bool      `json:"is_active" db:"is_active"`
+	UpdatedBy     *string   `json:"updated_by,omitempty" db:"updated_by"`
 	CreatedAt     time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }

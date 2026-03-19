@@ -30,7 +30,7 @@ func (r *productRepository) List(ctx context.Context, params domain.PaginationPa
 
 	start := time.Now()
 	query := `
-		SELECT id, name, description, price, stock_quantity, category, sku, is_active, created_at, updated_at
+		SELECT id, name, description, price, stock_quantity, category, sku, is_active, updated_by, created_at, updated_at
 		FROM products
 		WHERE is_active = true
 		ORDER BY created_at DESC
@@ -59,6 +59,7 @@ func (r *productRepository) List(ctx context.Context, params domain.PaginationPa
 			&p.Category,
 			&p.SKU,
 			&p.IsActive,
+			&p.UpdatedBy,
 			&p.CreatedAt,
 			&p.UpdatedAt,
 		)
@@ -101,7 +102,7 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 
 	start := time.Now()
 	query := `
-		SELECT id, name, description, price, stock_quantity, category, sku, is_active, created_at, updated_at
+		SELECT id, name, description, price, stock_quantity, category, sku, is_active, updated_by, created_at, updated_at
 		FROM products
 		WHERE id = $1
 	`
@@ -116,6 +117,7 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 		&p.Category,
 		&p.SKU,
 		&p.IsActive,
+		&p.UpdatedBy,
 		&p.CreatedAt,
 		&p.UpdatedAt,
 	)
@@ -142,8 +144,8 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 
 	start := time.Now()
 	query := `
-		INSERT INTO products (name, description, price, stock_quantity, category, sku, is_active)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO products (name, description, price, stock_quantity, category, sku, is_active, updated_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -157,6 +159,7 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 		product.Category,
 		product.SKU,
 		product.IsActive,
+		product.UpdatedBy,
 	).Scan(&product.ID, &product.CreatedAt, &product.UpdatedAt)
 
 	if r.metrics != nil {
@@ -178,8 +181,8 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 	query := `
 		UPDATE products
 		SET name = $1, description = $2, price = $3, stock_quantity = $4, 
-		    category = $5, sku = $6, is_active = $7, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $8
+		    category = $5, sku = $6, is_active = $7, updated_by = $8, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $9
 		RETURNING updated_at
 	`
 
@@ -193,6 +196,7 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 		product.Category,
 		product.SKU,
 		product.IsActive,
+		product.UpdatedBy,
 		product.ID,
 	).Scan(&product.UpdatedAt)
 

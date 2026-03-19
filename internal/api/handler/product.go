@@ -146,6 +146,10 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if clientID, ok := ctx.Value("client_id").(string); ok {
+		product.UpdatedBy = &clientID
+	}
+
 	h.logger.Info(ctx, "Creating new product", zap.String("product_name", product.Name))
 
 	if err := h.service.CreateProduct(ctx, &product); err != nil {
@@ -189,6 +193,10 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product.ID = id
+
+	if clientID, ok := ctx.Value("client_id").(string); ok {
+		product.UpdatedBy = &clientID
+	}
 
 	h.logger.Info(ctx, "Updating product", zap.String("product_id", id))
 
