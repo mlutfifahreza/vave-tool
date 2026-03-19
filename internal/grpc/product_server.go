@@ -85,8 +85,11 @@ func (s *ProductServer) CreateProduct(ctx context.Context, req *proto.CreateProd
 	if req.Description != "" {
 		product.Description = &req.Description
 	}
-	if req.Category != "" {
-		product.Category = &req.Category
+	if req.CategoryId != "" {
+		product.CategoryID = &req.CategoryId
+	}
+	if req.SubcategoryId != "" {
+		product.SubcategoryID = &req.SubcategoryId
 	}
 	if req.Sku != "" {
 		product.SKU = &req.Sku
@@ -120,8 +123,11 @@ func (s *ProductServer) UpdateProduct(ctx context.Context, req *proto.UpdateProd
 	if req.Description != "" {
 		product.Description = &req.Description
 	}
-	if req.Category != "" {
-		product.Category = &req.Category
+	if req.CategoryId != "" {
+		product.CategoryID = &req.CategoryId
+	}
+	if req.SubcategoryId != "" {
+		product.SubcategoryID = &req.SubcategoryId
 	}
 	if req.Sku != "" {
 		product.SKU = &req.Sku
@@ -170,8 +176,17 @@ func toPBProduct(p *domain.Product) *proto.Product {
 	if p.Description != nil {
 		pbProduct.Description = *p.Description
 	}
-	if p.Category != nil {
-		pbProduct.Category = *p.Category
+	if p.CategoryID != nil {
+		pbProduct.CategoryId = *p.CategoryID
+	}
+	if p.CategoryName != nil {
+		pbProduct.CategoryName = *p.CategoryName
+	}
+	if p.SubcategoryID != nil {
+		pbProduct.SubcategoryId = *p.SubcategoryID
+	}
+	if p.SubcategoryName != nil {
+		pbProduct.SubcategoryName = *p.SubcategoryName
 	}
 	if p.SKU != nil {
 		pbProduct.Sku = *p.SKU

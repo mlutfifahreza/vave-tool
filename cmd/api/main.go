@@ -100,20 +100,32 @@ func main() {
 
 	productRepo := repository.NewProductRepository(database)
 	clientRepo := repository.NewClientRepository(database)
+	categoryRepo := repository.NewCategoryRepository(database)
+	subcategoryRepo := repository.NewSubcategoryRepository(database)
+
 	productService := service.NewProductService(productRepo, redisClient, obsLogger)
+	categoryService := service.NewCategoryService(categoryRepo, redisClient, obsLogger)
+	subcategoryService := service.NewSubcategoryService(subcategoryRepo, redisClient, obsLogger)
+
 	productHandler := handler.NewProductHandler(productService, obsLogger)
+	categoryHandler := handler.NewCategoryHandler(categoryService, obsLogger)
+	subcategoryHandler := handler.NewSubcategoryHandler(subcategoryService, obsLogger)
 
 	middleware, err := observability.NewMiddleware(telemetry.Logger)
 	if err != nil {
 		log.Fatalf("Failed to create middleware: %v", err)
 	}
 
-	httpRouter := router.NewRouter(productHandler, middleware, telemetry.MetricsHandler, clientRepo)
+	httpRouter := router.NewRouter(productHandler, categoryHandler, subcategoryHandler, middleware, telemetry.MetricsHandler, clientRepo)
 	httpMux := httpRouter.SetupRoutes()
 
 	grpcServer := grpc.NewServer()
 	productGRPCServer := grpcHandler.NewProductServer(productService)
+	categoryGRPCServer := grpcHandler.NewCategoryServer(categoryService)
+	subcategoryGRPCServer := grpcHandler.NewSubcategoryServer(subcategoryService)
 	proto.RegisterProductServiceServer(grpcServer, productGRPCServer)
+	proto.RegisterCategoryServiceServer(grpcServer, categoryGRPCServer)
+	proto.RegisterSubcategoryServiceServer(grpcServer, subcategoryGRPCServer)
 	reflection.Register(grpcServer)
 
 	httpAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)

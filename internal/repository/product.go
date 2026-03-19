@@ -30,10 +30,15 @@ func (r *productRepository) List(ctx context.Context, params domain.PaginationPa
 
 	start := time.Now()
 	query := `
-		SELECT id, name, description, price, stock_quantity, category, sku, is_active, updated_by, created_at, updated_at
-		FROM products
-		WHERE is_active = true
-		ORDER BY created_at DESC
+		SELECT p.id, p.name, p.description, p.price, p.stock_quantity, 
+		       p.category_id, c.name as category_name,
+		       p.subcategory_id, s.name as subcategory_name,
+		       p.sku, p.is_active, p.updated_by, p.created_at, p.updated_at
+		FROM products p
+		LEFT JOIN categories c ON p.category_id = c.id
+		LEFT JOIN subcategories s ON p.subcategory_id = s.id
+		WHERE p.is_active = true
+		ORDER BY p.created_at DESC
 		LIMIT $1 OFFSET $2
 	`
 
@@ -56,7 +61,10 @@ func (r *productRepository) List(ctx context.Context, params domain.PaginationPa
 			&p.Description,
 			&p.Price,
 			&p.StockQuantity,
-			&p.Category,
+			&p.CategoryID,
+			&p.CategoryName,
+			&p.SubcategoryID,
+			&p.SubcategoryName,
 			&p.SKU,
 			&p.IsActive,
 			&p.UpdatedBy,
@@ -102,9 +110,14 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 
 	start := time.Now()
 	query := `
-		SELECT id, name, description, price, stock_quantity, category, sku, is_active, updated_by, created_at, updated_at
-		FROM products
-		WHERE id = $1
+		SELECT p.id, p.name, p.description, p.price, p.stock_quantity, 
+		       p.category_id, c.name as category_name,
+		       p.subcategory_id, s.name as subcategory_name,
+		       p.sku, p.is_active, p.updated_by, p.created_at, p.updated_at
+		FROM products p
+		LEFT JOIN categories c ON p.category_id = c.id
+		LEFT JOIN subcategories s ON p.subcategory_id = s.id
+		WHERE p.id = $1
 	`
 
 	var p domain.Product
@@ -114,7 +127,10 @@ func (r *productRepository) GetByID(ctx context.Context, id string) (*domain.Pro
 		&p.Description,
 		&p.Price,
 		&p.StockQuantity,
-		&p.Category,
+		&p.CategoryID,
+		&p.CategoryName,
+		&p.SubcategoryID,
+		&p.SubcategoryName,
 		&p.SKU,
 		&p.IsActive,
 		&p.UpdatedBy,
@@ -144,8 +160,8 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 
 	start := time.Now()
 	query := `
-		INSERT INTO products (name, description, price, stock_quantity, category, sku, is_active, updated_by)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO products (name, description, price, stock_quantity, category_id, subcategory_id, sku, is_active, updated_by)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -156,7 +172,8 @@ func (r *productRepository) Create(ctx context.Context, product *domain.Product)
 		product.Description,
 		product.Price,
 		product.StockQuantity,
-		product.Category,
+		product.CategoryID,
+		product.SubcategoryID,
 		product.SKU,
 		product.IsActive,
 		product.UpdatedBy,
@@ -181,8 +198,8 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 	query := `
 		UPDATE products
 		SET name = $1, description = $2, price = $3, stock_quantity = $4, 
-		    category = $5, sku = $6, is_active = $7, updated_by = $8, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $9
+		    category_id = $5, subcategory_id = $6, sku = $7, is_active = $8, updated_by = $9, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $10
 		RETURNING updated_at
 	`
 
@@ -193,7 +210,8 @@ func (r *productRepository) Update(ctx context.Context, product *domain.Product)
 		product.Description,
 		product.Price,
 		product.StockQuantity,
-		product.Category,
+		product.CategoryID,
+		product.SubcategoryID,
 		product.SKU,
 		product.IsActive,
 		product.UpdatedBy,

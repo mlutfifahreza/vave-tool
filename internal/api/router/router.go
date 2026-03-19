@@ -16,29 +16,49 @@ type contextKey string
 const ClientIDKey contextKey = "client_id"
 
 type Router struct {
-	productHandler *handler.ProductHandler
-	middleware     *observability.Middleware
-	metricsHandler http.Handler
-	clientRepo     domain.ClientRepository
+	productHandler     *handler.ProductHandler
+	categoryHandler    *handler.CategoryHandler
+	subcategoryHandler *handler.SubcategoryHandler
+	middleware         *observability.Middleware
+	metricsHandler     http.Handler
+	clientRepo         domain.ClientRepository
 }
 
-func NewRouter(productHandler *handler.ProductHandler, middleware *observability.Middleware, metricsHandler http.Handler, clientRepo domain.ClientRepository) *Router {
+func NewRouter(productHandler *handler.ProductHandler, categoryHandler *handler.CategoryHandler, subcategoryHandler *handler.SubcategoryHandler, middleware *observability.Middleware, metricsHandler http.Handler, clientRepo domain.ClientRepository) *Router {
 	return &Router{
-		productHandler: productHandler,
-		middleware:     middleware,
-		metricsHandler: metricsHandler,
-		clientRepo:     clientRepo,
+		productHandler:     productHandler,
+		categoryHandler:    categoryHandler,
+		subcategoryHandler: subcategoryHandler,
+		middleware:         middleware,
+		metricsHandler:     metricsHandler,
+		clientRepo:         clientRepo,
 	}
 }
 
 func (r *Router) SetupRoutes() http.Handler {
 	mux := http.NewServeMux()
 
+	// Product routes
 	mux.HandleFunc("GET /api/products", r.productHandler.List)
 	mux.HandleFunc("GET /api/products/{id}", r.productHandler.GetByID)
 	mux.HandleFunc("POST /internal/products", r.requireBasicAuth(r.productHandler.Create))
 	mux.HandleFunc("PUT /internal/products/{id}", r.requireBasicAuth(r.productHandler.Update))
 	mux.HandleFunc("DELETE /internal/products/{id}", r.requireBasicAuth(r.productHandler.Delete))
+
+	// Category routes
+	mux.HandleFunc("GET /api/categories", r.categoryHandler.List)
+	mux.HandleFunc("GET /api/categories/{id}", r.categoryHandler.GetByID)
+	mux.HandleFunc("POST /internal/categories", r.requireBasicAuth(r.categoryHandler.Create))
+	mux.HandleFunc("PUT /internal/categories/{id}", r.requireBasicAuth(r.categoryHandler.Update))
+	mux.HandleFunc("DELETE /internal/categories/{id}", r.requireBasicAuth(r.categoryHandler.Delete))
+
+	// Subcategory routes
+	mux.HandleFunc("GET /api/subcategories", r.subcategoryHandler.List)
+	mux.HandleFunc("GET /api/subcategories/{id}", r.subcategoryHandler.GetByID)
+	mux.HandleFunc("GET /api/categories/{category_id}/subcategories", r.subcategoryHandler.GetByCategoryID)
+	mux.HandleFunc("POST /internal/subcategories", r.requireBasicAuth(r.subcategoryHandler.Create))
+	mux.HandleFunc("PUT /internal/subcategories/{id}", r.requireBasicAuth(r.subcategoryHandler.Update))
+	mux.HandleFunc("DELETE /internal/subcategories/{id}", r.requireBasicAuth(r.subcategoryHandler.Delete))
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)

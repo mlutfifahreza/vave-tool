@@ -271,3 +271,549 @@ var ProductService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/product.proto",
 }
+
+const (
+	CategoryService_ListCategories_FullMethodName = "/product.CategoryService/ListCategories"
+	CategoryService_GetCategory_FullMethodName    = "/product.CategoryService/GetCategory"
+	CategoryService_CreateCategory_FullMethodName = "/product.CategoryService/CreateCategory"
+	CategoryService_UpdateCategory_FullMethodName = "/product.CategoryService/UpdateCategory"
+	CategoryService_DeleteCategory_FullMethodName = "/product.CategoryService/DeleteCategory"
+)
+
+// CategoryServiceClient is the client API for CategoryService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CategoryServiceClient interface {
+	ListCategories(ctx context.Context, in *ListCategoriesRequest, opts ...grpc.CallOption) (*ListCategoriesResponse, error)
+	GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*GetCategoryResponse, error)
+	CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*CreateCategoryResponse, error)
+	UpdateCategory(ctx context.Context, in *UpdateCategoryRequest, opts ...grpc.CallOption) (*UpdateCategoryResponse, error)
+	DeleteCategory(ctx context.Context, in *DeleteCategoryRequest, opts ...grpc.CallOption) (*DeleteCategoryResponse, error)
+}
+
+type categoryServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCategoryServiceClient(cc grpc.ClientConnInterface) CategoryServiceClient {
+	return &categoryServiceClient{cc}
+}
+
+func (c *categoryServiceClient) ListCategories(ctx context.Context, in *ListCategoriesRequest, opts ...grpc.CallOption) (*ListCategoriesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListCategoriesResponse)
+	err := c.cc.Invoke(ctx, CategoryService_ListCategories_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *categoryServiceClient) GetCategory(ctx context.Context, in *GetCategoryRequest, opts ...grpc.CallOption) (*GetCategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCategoryResponse)
+	err := c.cc.Invoke(ctx, CategoryService_GetCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *categoryServiceClient) CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*CreateCategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateCategoryResponse)
+	err := c.cc.Invoke(ctx, CategoryService_CreateCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *categoryServiceClient) UpdateCategory(ctx context.Context, in *UpdateCategoryRequest, opts ...grpc.CallOption) (*UpdateCategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateCategoryResponse)
+	err := c.cc.Invoke(ctx, CategoryService_UpdateCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *categoryServiceClient) DeleteCategory(ctx context.Context, in *DeleteCategoryRequest, opts ...grpc.CallOption) (*DeleteCategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteCategoryResponse)
+	err := c.cc.Invoke(ctx, CategoryService_DeleteCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CategoryServiceServer is the server API for CategoryService service.
+// All implementations must embed UnimplementedCategoryServiceServer
+// for forward compatibility.
+type CategoryServiceServer interface {
+	ListCategories(context.Context, *ListCategoriesRequest) (*ListCategoriesResponse, error)
+	GetCategory(context.Context, *GetCategoryRequest) (*GetCategoryResponse, error)
+	CreateCategory(context.Context, *CreateCategoryRequest) (*CreateCategoryResponse, error)
+	UpdateCategory(context.Context, *UpdateCategoryRequest) (*UpdateCategoryResponse, error)
+	DeleteCategory(context.Context, *DeleteCategoryRequest) (*DeleteCategoryResponse, error)
+	mustEmbedUnimplementedCategoryServiceServer()
+}
+
+// UnimplementedCategoryServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedCategoryServiceServer struct{}
+
+func (UnimplementedCategoryServiceServer) ListCategories(context.Context, *ListCategoriesRequest) (*ListCategoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListCategories not implemented")
+}
+func (UnimplementedCategoryServiceServer) GetCategory(context.Context, *GetCategoryRequest) (*GetCategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCategory not implemented")
+}
+func (UnimplementedCategoryServiceServer) CreateCategory(context.Context, *CreateCategoryRequest) (*CreateCategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCategory not implemented")
+}
+func (UnimplementedCategoryServiceServer) UpdateCategory(context.Context, *UpdateCategoryRequest) (*UpdateCategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateCategory not implemented")
+}
+func (UnimplementedCategoryServiceServer) DeleteCategory(context.Context, *DeleteCategoryRequest) (*DeleteCategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteCategory not implemented")
+}
+func (UnimplementedCategoryServiceServer) mustEmbedUnimplementedCategoryServiceServer() {}
+func (UnimplementedCategoryServiceServer) testEmbeddedByValue()                         {}
+
+// UnsafeCategoryServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CategoryServiceServer will
+// result in compilation errors.
+type UnsafeCategoryServiceServer interface {
+	mustEmbedUnimplementedCategoryServiceServer()
+}
+
+func RegisterCategoryServiceServer(s grpc.ServiceRegistrar, srv CategoryServiceServer) {
+	// If the following call pancis, it indicates UnimplementedCategoryServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&CategoryService_ServiceDesc, srv)
+}
+
+func _CategoryService_ListCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListCategoriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CategoryServiceServer).ListCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CategoryService_ListCategories_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CategoryServiceServer).ListCategories(ctx, req.(*ListCategoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CategoryService_GetCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CategoryServiceServer).GetCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CategoryService_GetCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CategoryServiceServer).GetCategory(ctx, req.(*GetCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CategoryService_CreateCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CategoryServiceServer).CreateCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CategoryService_CreateCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CategoryServiceServer).CreateCategory(ctx, req.(*CreateCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CategoryService_UpdateCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CategoryServiceServer).UpdateCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CategoryService_UpdateCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CategoryServiceServer).UpdateCategory(ctx, req.(*UpdateCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CategoryService_DeleteCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CategoryServiceServer).DeleteCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CategoryService_DeleteCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CategoryServiceServer).DeleteCategory(ctx, req.(*DeleteCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CategoryService_ServiceDesc is the grpc.ServiceDesc for CategoryService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CategoryService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "product.CategoryService",
+	HandlerType: (*CategoryServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListCategories",
+			Handler:    _CategoryService_ListCategories_Handler,
+		},
+		{
+			MethodName: "GetCategory",
+			Handler:    _CategoryService_GetCategory_Handler,
+		},
+		{
+			MethodName: "CreateCategory",
+			Handler:    _CategoryService_CreateCategory_Handler,
+		},
+		{
+			MethodName: "UpdateCategory",
+			Handler:    _CategoryService_UpdateCategory_Handler,
+		},
+		{
+			MethodName: "DeleteCategory",
+			Handler:    _CategoryService_DeleteCategory_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/product.proto",
+}
+
+const (
+	SubcategoryService_ListSubcategories_FullMethodName          = "/product.SubcategoryService/ListSubcategories"
+	SubcategoryService_GetSubcategory_FullMethodName             = "/product.SubcategoryService/GetSubcategory"
+	SubcategoryService_GetSubcategoriesByCategory_FullMethodName = "/product.SubcategoryService/GetSubcategoriesByCategory"
+	SubcategoryService_CreateSubcategory_FullMethodName          = "/product.SubcategoryService/CreateSubcategory"
+	SubcategoryService_UpdateSubcategory_FullMethodName          = "/product.SubcategoryService/UpdateSubcategory"
+	SubcategoryService_DeleteSubcategory_FullMethodName          = "/product.SubcategoryService/DeleteSubcategory"
+)
+
+// SubcategoryServiceClient is the client API for SubcategoryService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type SubcategoryServiceClient interface {
+	ListSubcategories(ctx context.Context, in *ListSubcategoriesRequest, opts ...grpc.CallOption) (*ListSubcategoriesResponse, error)
+	GetSubcategory(ctx context.Context, in *GetSubcategoryRequest, opts ...grpc.CallOption) (*GetSubcategoryResponse, error)
+	GetSubcategoriesByCategory(ctx context.Context, in *GetSubcategoriesByCategoryRequest, opts ...grpc.CallOption) (*GetSubcategoriesByCategoryResponse, error)
+	CreateSubcategory(ctx context.Context, in *CreateSubcategoryRequest, opts ...grpc.CallOption) (*CreateSubcategoryResponse, error)
+	UpdateSubcategory(ctx context.Context, in *UpdateSubcategoryRequest, opts ...grpc.CallOption) (*UpdateSubcategoryResponse, error)
+	DeleteSubcategory(ctx context.Context, in *DeleteSubcategoryRequest, opts ...grpc.CallOption) (*DeleteSubcategoryResponse, error)
+}
+
+type subcategoryServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSubcategoryServiceClient(cc grpc.ClientConnInterface) SubcategoryServiceClient {
+	return &subcategoryServiceClient{cc}
+}
+
+func (c *subcategoryServiceClient) ListSubcategories(ctx context.Context, in *ListSubcategoriesRequest, opts ...grpc.CallOption) (*ListSubcategoriesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSubcategoriesResponse)
+	err := c.cc.Invoke(ctx, SubcategoryService_ListSubcategories_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subcategoryServiceClient) GetSubcategory(ctx context.Context, in *GetSubcategoryRequest, opts ...grpc.CallOption) (*GetSubcategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSubcategoryResponse)
+	err := c.cc.Invoke(ctx, SubcategoryService_GetSubcategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subcategoryServiceClient) GetSubcategoriesByCategory(ctx context.Context, in *GetSubcategoriesByCategoryRequest, opts ...grpc.CallOption) (*GetSubcategoriesByCategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSubcategoriesByCategoryResponse)
+	err := c.cc.Invoke(ctx, SubcategoryService_GetSubcategoriesByCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subcategoryServiceClient) CreateSubcategory(ctx context.Context, in *CreateSubcategoryRequest, opts ...grpc.CallOption) (*CreateSubcategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateSubcategoryResponse)
+	err := c.cc.Invoke(ctx, SubcategoryService_CreateSubcategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subcategoryServiceClient) UpdateSubcategory(ctx context.Context, in *UpdateSubcategoryRequest, opts ...grpc.CallOption) (*UpdateSubcategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateSubcategoryResponse)
+	err := c.cc.Invoke(ctx, SubcategoryService_UpdateSubcategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subcategoryServiceClient) DeleteSubcategory(ctx context.Context, in *DeleteSubcategoryRequest, opts ...grpc.CallOption) (*DeleteSubcategoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteSubcategoryResponse)
+	err := c.cc.Invoke(ctx, SubcategoryService_DeleteSubcategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SubcategoryServiceServer is the server API for SubcategoryService service.
+// All implementations must embed UnimplementedSubcategoryServiceServer
+// for forward compatibility.
+type SubcategoryServiceServer interface {
+	ListSubcategories(context.Context, *ListSubcategoriesRequest) (*ListSubcategoriesResponse, error)
+	GetSubcategory(context.Context, *GetSubcategoryRequest) (*GetSubcategoryResponse, error)
+	GetSubcategoriesByCategory(context.Context, *GetSubcategoriesByCategoryRequest) (*GetSubcategoriesByCategoryResponse, error)
+	CreateSubcategory(context.Context, *CreateSubcategoryRequest) (*CreateSubcategoryResponse, error)
+	UpdateSubcategory(context.Context, *UpdateSubcategoryRequest) (*UpdateSubcategoryResponse, error)
+	DeleteSubcategory(context.Context, *DeleteSubcategoryRequest) (*DeleteSubcategoryResponse, error)
+	mustEmbedUnimplementedSubcategoryServiceServer()
+}
+
+// UnimplementedSubcategoryServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedSubcategoryServiceServer struct{}
+
+func (UnimplementedSubcategoryServiceServer) ListSubcategories(context.Context, *ListSubcategoriesRequest) (*ListSubcategoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListSubcategories not implemented")
+}
+func (UnimplementedSubcategoryServiceServer) GetSubcategory(context.Context, *GetSubcategoryRequest) (*GetSubcategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSubcategory not implemented")
+}
+func (UnimplementedSubcategoryServiceServer) GetSubcategoriesByCategory(context.Context, *GetSubcategoriesByCategoryRequest) (*GetSubcategoriesByCategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSubcategoriesByCategory not implemented")
+}
+func (UnimplementedSubcategoryServiceServer) CreateSubcategory(context.Context, *CreateSubcategoryRequest) (*CreateSubcategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSubcategory not implemented")
+}
+func (UnimplementedSubcategoryServiceServer) UpdateSubcategory(context.Context, *UpdateSubcategoryRequest) (*UpdateSubcategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSubcategory not implemented")
+}
+func (UnimplementedSubcategoryServiceServer) DeleteSubcategory(context.Context, *DeleteSubcategoryRequest) (*DeleteSubcategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSubcategory not implemented")
+}
+func (UnimplementedSubcategoryServiceServer) mustEmbedUnimplementedSubcategoryServiceServer() {}
+func (UnimplementedSubcategoryServiceServer) testEmbeddedByValue()                            {}
+
+// UnsafeSubcategoryServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SubcategoryServiceServer will
+// result in compilation errors.
+type UnsafeSubcategoryServiceServer interface {
+	mustEmbedUnimplementedSubcategoryServiceServer()
+}
+
+func RegisterSubcategoryServiceServer(s grpc.ServiceRegistrar, srv SubcategoryServiceServer) {
+	// If the following call pancis, it indicates UnimplementedSubcategoryServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&SubcategoryService_ServiceDesc, srv)
+}
+
+func _SubcategoryService_ListSubcategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSubcategoriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubcategoryServiceServer).ListSubcategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubcategoryService_ListSubcategories_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubcategoryServiceServer).ListSubcategories(ctx, req.(*ListSubcategoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SubcategoryService_GetSubcategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSubcategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubcategoryServiceServer).GetSubcategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubcategoryService_GetSubcategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubcategoryServiceServer).GetSubcategory(ctx, req.(*GetSubcategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SubcategoryService_GetSubcategoriesByCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSubcategoriesByCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubcategoryServiceServer).GetSubcategoriesByCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubcategoryService_GetSubcategoriesByCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubcategoryServiceServer).GetSubcategoriesByCategory(ctx, req.(*GetSubcategoriesByCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SubcategoryService_CreateSubcategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSubcategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubcategoryServiceServer).CreateSubcategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubcategoryService_CreateSubcategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubcategoryServiceServer).CreateSubcategory(ctx, req.(*CreateSubcategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SubcategoryService_UpdateSubcategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSubcategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubcategoryServiceServer).UpdateSubcategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubcategoryService_UpdateSubcategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubcategoryServiceServer).UpdateSubcategory(ctx, req.(*UpdateSubcategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SubcategoryService_DeleteSubcategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSubcategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubcategoryServiceServer).DeleteSubcategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SubcategoryService_DeleteSubcategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubcategoryServiceServer).DeleteSubcategory(ctx, req.(*DeleteSubcategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SubcategoryService_ServiceDesc is the grpc.ServiceDesc for SubcategoryService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SubcategoryService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "product.SubcategoryService",
+	HandlerType: (*SubcategoryServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListSubcategories",
+			Handler:    _SubcategoryService_ListSubcategories_Handler,
+		},
+		{
+			MethodName: "GetSubcategory",
+			Handler:    _SubcategoryService_GetSubcategory_Handler,
+		},
+		{
+			MethodName: "GetSubcategoriesByCategory",
+			Handler:    _SubcategoryService_GetSubcategoriesByCategory_Handler,
+		},
+		{
+			MethodName: "CreateSubcategory",
+			Handler:    _SubcategoryService_CreateSubcategory_Handler,
+		},
+		{
+			MethodName: "UpdateSubcategory",
+			Handler:    _SubcategoryService_UpdateSubcategory_Handler,
+		},
+		{
+			MethodName: "DeleteSubcategory",
+			Handler:    _SubcategoryService_DeleteSubcategory_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/product.proto",
+}
