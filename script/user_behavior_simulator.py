@@ -180,9 +180,15 @@ class UserBehaviorSimulator:
                 if self.total_requests > 0:
                     success_rate = (self.successful_requests / self.total_requests * 100)
                     avg_latency = sum(self.latencies) / len(self.latencies) if self.latencies else 0
+                    if self.latencies:
+                        sorted_latencies = sorted(self.latencies)
+                        p99 = sorted_latencies[int(len(sorted_latencies) * 0.99)]
+                    else:
+                        p99 = 0
                 else:
                     success_rate = 0
                     avg_latency = 0
+                    p99 = 0
             
             sys.stdout.write(
                 f'\r⏱️  {int(elapsed)}s / {self.duration}s | '
@@ -190,7 +196,7 @@ class UserBehaviorSimulator:
                 f'🔄 {self.total_flows} flows | '
                 f'📨 {self.total_requests} reqs | '
                 f'✓ {success_rate:.1f}% | '
-                f'⚡ {avg_latency*1000:.0f}ms avg'
+                f'⚡ {avg_latency*1000:.0f}ms avg, {p99*1000:.0f}ms p99'
             )
             sys.stdout.flush()
             
