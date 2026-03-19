@@ -35,3 +35,4 @@ Thumbs.db
 # Generated files
 internal/grpc/pb/*.pb.go
 logs/api.log
+api

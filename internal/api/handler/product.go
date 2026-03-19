@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/vave-tool/internal/api/response"
@@ -107,6 +108,12 @@ func (h *ProductHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, err := uuid.Parse(id); err != nil {
+		h.logger.Warn(ctx, "Invalid product ID format", zap.String("product_id", id))
+		response.Error(w, http.StatusBadRequest, "Invalid product ID format")
+		return
+	}
+
 	h.logger.Info(ctx, "Fetching product by ID", zap.String("product_id", id))
 
 	product, err := h.service.GetProduct(ctx, id)
@@ -185,6 +192,12 @@ func (h *ProductHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, err := uuid.Parse(id); err != nil {
+		h.logger.Warn(ctx, "Invalid product ID format", zap.String("product_id", id))
+		response.Error(w, http.StatusBadRequest, "Invalid product ID format")
+		return
+	}
+
 	var product domain.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		h.logger.Warn(ctx, "Invalid request body", zap.Error(err))
@@ -234,6 +247,12 @@ func (h *ProductHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if id == "" {
 		h.logger.Warn(ctx, "Product ID is missing")
 		response.Error(w, http.StatusBadRequest, "Product ID is required")
+		return
+	}
+
+	if _, err := uuid.Parse(id); err != nil {
+		h.logger.Warn(ctx, "Invalid product ID format", zap.String("product_id", id))
+		response.Error(w, http.StatusBadRequest, "Invalid product ID format")
 		return
 	}
 
