@@ -27,12 +27,16 @@ func NewProductHandler(service domain.ProductService, logger *observability.Logg
 
 // List godoc
 // @Summary List all products
-// @Description Get a paginated list of products
+// @Description Get a paginated list of products with optional filters
 // @Tags products
 // @Accept json
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param size query int false "Items per page" default(10)
+// @Param category_id query string false "Filter by category ID"
+// @Param subcategory_id query string false "Filter by subcategory ID"
+// @Param min_price query number false "Minimum price filter"
+// @Param max_price query number false "Maximum price filter"
 // @Success 200 {object} response.Response{data=domain.PaginatedProducts}
 // @Failure 400 {object} response.Response
 // @Failure 500 {object} response.Response
@@ -50,6 +54,8 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 		Page: defaultPage,
 		Size: defaultSize,
 	}
+
+	filters := domain.ProductFilterParams{}
 
 	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
 		if page, err := strconv.Atoi(pageStr); err == nil && page > 0 {
@@ -71,9 +77,32 @@ func (h *ProductHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	h.logger.Info(ctx, "Listing products", zap.Int("page", params.Page), zap.Int("size", params.Size))
+	if categoryID := r.URL.Query().Get("category_id"); categoryID != "" {
+		filters.CategoryID = &categoryID
+	}
 
-	result, err := h.service.ListProducts(ctx, params)
+	if subcategoryID := r.URL.Query().Get("subcategory_id"); subcategoryID != "" {
+		filters.SubcategoryID = &subcategoryID
+	}
+
+	if minPriceStr := r.URL.Query().Get("min_price"); minPriceStr != "" {
+		if minPrice, err := strconv.ParseFloat(minPriceStr, 64); err == nil && minPrice >= 0 {
+			filters.MinPrice = &minPrice
+		}
+	}
+
+	if maxPriceStr := r.URL.Query().Get("max_price"); maxPriceStr != "" {
+		if maxPrice, err := strconv.ParseFloat(maxPriceStr, 64); err == nil && maxPrice >= 0 {
+			filters.MaxPrice = &maxPrice
+		}
+	}
+
+	h.logger.Info(ctx, "Listing products",
+		zap.Int("page", params.Page),
+		zap.Int("size", params.Size),
+		zap.Any("filters", filters))
+
+	result, err := h.service.ListProducts(ctx, params, filters)
 	if err != nil {
 		h.logger.Error(ctx, "Failed to fetch products", zap.Error(err))
 		response.Error(w, http.StatusInternalServerError, "Failed to fetch products")

@@ -46,13 +46,20 @@ type PaginationParams struct {
 	Size int `json:"size"`
 }
 
+type ProductFilterParams struct {
+	CategoryID    *string  `json:"category_id,omitempty"`
+	SubcategoryID *string  `json:"subcategory_id,omitempty"`
+	MinPrice      *float64 `json:"min_price,omitempty"`
+	MaxPrice      *float64 `json:"max_price,omitempty"`
+}
+
 type PaginatedProducts struct {
 	Products []*Product `json:"products"`
 }
 
 type ProductRepository interface {
-	List(ctx context.Context, params PaginationParams) ([]*Product, error)
-	Count(ctx context.Context) (int64, error)
+	List(ctx context.Context, params PaginationParams, filters ProductFilterParams) ([]*Product, error)
+	Count(ctx context.Context, filters ProductFilterParams) (int64, error)
 	GetByID(ctx context.Context, id string) (*Product, error)
 	Create(ctx context.Context, product *Product) error
 	Update(ctx context.Context, product *Product) error
@@ -82,7 +89,7 @@ type SubcategoryRepository interface {
 }
 
 type ProductService interface {
-	ListProducts(ctx context.Context, params PaginationParams) (*PaginatedProducts, error)
+	ListProducts(ctx context.Context, params PaginationParams, filters ProductFilterParams) (*PaginatedProducts, error)
 	GetProduct(ctx context.Context, id string) (*Product, error)
 	CreateProduct(ctx context.Context, product *Product) error
 	UpdateProduct(ctx context.Context, product *Product) error

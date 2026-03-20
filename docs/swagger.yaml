@@ -1,38 +1,4 @@
 basePath: /
-definitions:
-  domain.Product:
-    properties:
-      category:
-        type: string
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: string
-      is_active:
-        type: boolean
-      name:
-        type: string
-      price:
-        type: number
-      sku:
-        type: string
-      stock_quantity:
-        type: integer
-      updated_at:
-        type: string
-    type: object
-  response.Response:
-    properties:
-      data: {}
-      error:
-        type: string
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
 host: localhost:8080
 info:
   contact:
@@ -46,71 +12,7 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Vave Tool API
   version: "1.0"
-paths:
-  /api/products:
-    get:
-      consumes:
-      - application/json
-      description: Get a list of all products
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/domain.Product'
-                  type: array
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: List all products
-      tags:
-      - products
-  /api/products/get:
-    get:
-      consumes:
-      - application/json
-      description: Get a single product by its ID
-      parameters:
-      - description: Product ID
-        in: query
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/domain.Product'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: Get product by ID
-      tags:
-      - products
+paths: {}
 schemes:
 - http
 swagger: "2.0"

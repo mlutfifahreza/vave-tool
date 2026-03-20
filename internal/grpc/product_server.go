@@ -37,7 +37,9 @@ func (s *ProductServer) ListProducts(ctx context.Context, req *proto.ListProduct
 		Size: size,
 	}
 
-	result, err := s.service.ListProducts(ctx, paginationParams)
+	filters := domain.ProductFilterParams{}
+
+	result, err := s.service.ListProducts(ctx, paginationParams, filters)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to fetch products: %v", err)
 	}

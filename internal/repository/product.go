@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/vave-tool/internal/domain"
@@ -22,13 +23,12 @@ func NewProductRepository(db *sql.DB) domain.ProductRepository {
 	}
 }
 
-func (r *productRepository) List(ctx context.Context, params domain.PaginationParams) ([]*domain.Product, error) {
+func (r *productRepository) List(ctx context.Context, params domain.PaginationParams, filters domain.ProductFilterParams) ([]*domain.Product, error) {
 	ctx, span := observability.StartSpan(ctx, "Repository.ListProducts")
 	defer span.End()
 
 	offset := (params.Page - 1) * params.Size
 
-	start := time.Now()
 	query := `
 		SELECT p.id, p.name, p.description, p.price, p.stock_quantity, 
 		       p.category_id, c.name as category_name,
@@ -37,12 +37,43 @@ func (r *productRepository) List(ctx context.Context, params domain.PaginationPa
 		FROM products p
 		LEFT JOIN categories c ON p.category_id = c.id
 		LEFT JOIN subcategories s ON p.subcategory_id = s.id
-		WHERE p.is_active = true
-		ORDER BY p.created_at DESC
-		LIMIT $1 OFFSET $2
-	`
+		WHERE p.is_active = true`
 
-	rows, err := r.db.QueryContext(ctx, query, params.Size, offset)
+	args := []interface{}{}
+	argIndex := 1
+
+	if filters.CategoryID != nil && *filters.CategoryID != "" {
+		query += ` AND p.category_id = $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.CategoryID)
+		argIndex++
+	}
+
+	if filters.SubcategoryID != nil && *filters.SubcategoryID != "" {
+		query += ` AND p.subcategory_id = $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.SubcategoryID)
+		argIndex++
+	}
+
+	if filters.MinPrice != nil {
+		query += ` AND p.price >= $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.MinPrice)
+		argIndex++
+	}
+
+	if filters.MaxPrice != nil {
+		query += ` AND p.price <= $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.MaxPrice)
+		argIndex++
+	}
+
+	query += `
+		ORDER BY p.created_at DESC
+		LIMIT $` + strconv.Itoa(argIndex) + ` OFFSET $` + strconv.Itoa(argIndex+1)
+
+	args = append(args, params.Size, offset)
+
+	start := time.Now()
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if r.metrics != nil {
 		r.metrics.RecordDBCall(ctx, "list_products", time.Since(start), err)
 	}
@@ -84,15 +115,42 @@ func (r *productRepository) List(ctx context.Context, params domain.PaginationPa
 	return products, nil
 }
 
-func (r *productRepository) Count(ctx context.Context) (int64, error) {
+func (r *productRepository) Count(ctx context.Context, filters domain.ProductFilterParams) (int64, error) {
 	ctx, span := observability.StartSpan(ctx, "Repository.CountProducts")
 	defer span.End()
 
-	start := time.Now()
-	query := `SELECT COUNT(*) FROM products WHERE is_active = true`
+	query := `SELECT COUNT(*) FROM products p WHERE p.is_active = true`
 
+	args := []interface{}{}
+	argIndex := 1
+
+	if filters.CategoryID != nil && *filters.CategoryID != "" {
+		query += ` AND p.category_id = $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.CategoryID)
+		argIndex++
+	}
+
+	if filters.SubcategoryID != nil && *filters.SubcategoryID != "" {
+		query += ` AND p.subcategory_id = $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.SubcategoryID)
+		argIndex++
+	}
+
+	if filters.MinPrice != nil {
+		query += ` AND p.price >= $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.MinPrice)
+		argIndex++
+	}
+
+	if filters.MaxPrice != nil {
+		query += ` AND p.price <= $` + strconv.Itoa(argIndex)
+		args = append(args, *filters.MaxPrice)
+		argIndex++
+	}
+
+	start := time.Now()
 	var count int64
-	err := r.db.QueryRowContext(ctx, query).Scan(&count)
+	err := r.db.QueryRowContext(ctx, query, args...).Scan(&count)
 	if r.metrics != nil {
 		r.metrics.RecordDBCall(ctx, "count_products", time.Since(start), err)
 	}

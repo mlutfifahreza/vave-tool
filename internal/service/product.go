@@ -31,13 +31,16 @@ func NewProductService(repo domain.ProductRepository, redisClient *redis.Client,
 	}
 }
 
-func (s *productService) ListProducts(ctx context.Context, params domain.PaginationParams) (*domain.PaginatedProducts, error) {
+func (s *productService) ListProducts(ctx context.Context, params domain.PaginationParams, filters domain.ProductFilterParams) (*domain.PaginatedProducts, error) {
 	ctx, span := observability.StartSpan(ctx, "ProductService.ListProducts")
 	defer span.End()
 
-	cacheKey := fmt.Sprintf("products:list:page:%d:size:%d", params.Page, params.Size)
+	cacheKey := s.generateCacheKey(params, filters)
 
-	s.logger.Debug(ctx, "Checking cache for product list", zap.Int("page", params.Page), zap.Int("size", params.Size))
+	s.logger.Debug(ctx, "Checking cache for product list",
+		zap.Int("page", params.Page),
+		zap.Int("size", params.Size),
+		zap.String("cache_key", cacheKey))
 	redisStart := time.Now()
 	cached, err := s.redisClient.Get(ctx, cacheKey).Result()
 	if s.metrics != nil {
@@ -61,9 +64,11 @@ func (s *productService) ListProducts(ctx context.Context, params domain.Paginat
 	if s.metrics != nil {
 		s.metrics.RecordCacheAccess(ctx, "list_products", false)
 	}
-	s.logger.Debug(ctx, "Product list not in cache, fetching from repository", zap.Int("page", params.Page), zap.Int("size", params.Size))
+	s.logger.Debug(ctx, "Product list not in cache, fetching from repository",
+		zap.Int("page", params.Page),
+		zap.Int("size", params.Size))
 
-	products, err := s.repo.List(ctx, params)
+	products, err := s.repo.List(ctx, params, filters)
 	if err != nil {
 		observability.RecordError(span, err, "Failed to list products")
 		return nil, err
@@ -93,6 +98,28 @@ func (s *productService) ListProducts(ctx context.Context, params domain.Paginat
 	return &domain.PaginatedProducts{
 		Products: products,
 	}, nil
+}
+
+func (s *productService) generateCacheKey(params domain.PaginationParams, filters domain.ProductFilterParams) string {
+	key := fmt.Sprintf("products:list:page:%d:size:%d", params.Page, params.Size)
+
+	if filters.CategoryID != nil && *filters.CategoryID != "" {
+		key += fmt.Sprintf(":cat:%s", *filters.CategoryID)
+	}
+
+	if filters.SubcategoryID != nil && *filters.SubcategoryID != "" {
+		key += fmt.Sprintf(":subcat:%s", *filters.SubcategoryID)
+	}
+
+	if filters.MinPrice != nil {
+		key += fmt.Sprintf(":minp:%.2f", *filters.MinPrice)
+	}
+
+	if filters.MaxPrice != nil {
+		key += fmt.Sprintf(":maxp:%.2f", *filters.MaxPrice)
+	}
+
+	return key
 }
 
 func (s *productService) GetProduct(ctx context.Context, id string) (*domain.Product, error) {
