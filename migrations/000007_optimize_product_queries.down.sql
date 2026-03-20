@@ -1,0 +1,3 @@
+DROP INDEX IF EXISTS idx_products_active_category_subcategory_created;
+DROP INDEX IF EXISTS idx_products_active_category_price_created;
+DROP INDEX IF EXISTS idx_products_active_price_created;
