@@ -102,21 +102,24 @@ func main() {
 	clientRepo := repository.NewClientRepository(database)
 	categoryRepo := repository.NewCategoryRepository(database)
 	subcategoryRepo := repository.NewSubcategoryRepository(database)
+	userRepo := repository.NewUserRepository(database)
 
 	productService := service.NewProductService(productRepo, redisClient, obsLogger)
 	categoryService := service.NewCategoryService(categoryRepo, redisClient, obsLogger)
 	subcategoryService := service.NewSubcategoryService(subcategoryRepo, redisClient, obsLogger)
+	authService := service.NewAuthService(userRepo, cfg.Auth.JWTSecret, cfg.Auth.GoogleClientID)
 
 	productHandler := handler.NewProductHandler(productService, obsLogger)
 	categoryHandler := handler.NewCategoryHandler(categoryService, obsLogger)
 	subcategoryHandler := handler.NewSubcategoryHandler(subcategoryService, obsLogger)
+	authHandler := handler.NewAuthHandler(authService, obsLogger)
 
 	middleware, err := observability.NewMiddleware(telemetry.Logger)
 	if err != nil {
 		log.Fatalf("Failed to create middleware: %v", err)
 	}
 
-	httpRouter := router.NewRouter(productHandler, categoryHandler, subcategoryHandler, middleware, telemetry.MetricsHandler, clientRepo)
+	httpRouter := router.NewRouter(productHandler, categoryHandler, subcategoryHandler, authHandler, middleware, telemetry.MetricsHandler, clientRepo, authService)
 	httpMux := httpRouter.SetupRoutes()
 
 	grpcServer := grpc.NewServer()

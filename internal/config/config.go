@@ -57,6 +57,8 @@ type GRPCConfig struct {
 type AuthConfig struct {
 	InternalUsername string
 	InternalPassword string
+	JWTSecret        string
+	GoogleClientID   string
 }
 
 func Load() *Config {
@@ -99,6 +101,8 @@ func Load() *Config {
 		Auth: AuthConfig{
 			InternalUsername: getEnv("INTERNAL_AUTH_USERNAME", "admin"),
 			InternalPassword: getEnv("INTERNAL_AUTH_PASSWORD", "admin"),
+			JWTSecret:        getEnv("JWT_SECRET", ""),
+			GoogleClientID:   getEnv("GOOGLE_CLIENT_ID", ""),
 		},
 		LogLevel: getEnv("LOG_LEVEL", "info"),
 	}
